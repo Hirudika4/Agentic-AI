@@ -22,6 +22,8 @@ build/
 
 # Large binary files
 *.mp4
+*.mov
+*.gif
 *.faiss
 *.pkl
 faiss_index/
