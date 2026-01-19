@@ -19,3 +19,9 @@ build/
 *.jir
 .jaccache/
 .jac
+
+# Large binary files
+*.mp4
+*.faiss
+*.pkl
+faiss_index/
