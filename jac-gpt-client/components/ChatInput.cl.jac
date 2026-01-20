@@ -1,4 +1,4 @@
-"""Chat input component with send button using Mantine UI."""
+"""Chat input component with send button using Mantine UI (Jaseci orange theme)."""
 
 import from react { useRef, useEffect }
 import from "@mantine/core" {
@@ -24,6 +24,15 @@ def:pub ChatInput(
 ) -> any {
     has inputValue: str = "";
     textareaRef = useRef(None);
+
+    # Theme tokens (keep INSIDE function – Jac client parser dislikes top-level consts)
+    BG = "#141414";
+    TOPBAR_BG = "rgba(20,20,20,0.95)";
+    BORDER = "#374151";
+    TEXT = "#ffffff";
+    MUTED = "#9ca3af";
+    ORANGE = "#f97316";
+    ORANGE_DARK = "#ea580c";
 
     # Auto-resize textarea
     useEffect(lambda -> None {
@@ -65,30 +74,36 @@ def:pub ChatInput(
         <ActionIcon
             onClick={onStop}
             variant="filled"
-            color="red"
             size="xl"
             radius="xl"
-            style={{
-                "boxShadow": "0 4px 12px rgba(239, 68, 68, 0.3)"
+            styles={{
+                "root": {
+                    "background": "rgba(239, 68, 68, 0.95)",
+                    "border": "1px solid rgba(239, 68, 68, 0.35)",
+                    "boxShadow": "0 6px 18px rgba(239, 68, 68, 0.18)"
+                }
             }}
         >
             <IconPlayerStop size={20} />
         </ActionIcon>
     </Tooltip>;
 
-    # Send button
+    # Send button (orange)
     sendButton = <Tooltip label="Send message" position="top" disabled={not canSend}>
         <ActionIcon
             onClick={handleSubmit}
             disabled={not canSend}
-            variant={(("gradient" if canSend else "subtle"))}
-            gradient={{"from": "violet", "to": "purple", "deg": 135}}
-            color={(("violet" if canSend else "gray"))}
+            variant="filled"
             size="xl"
             radius="xl"
-            style={{
-                "boxShadow": (("0 4px 12px rgba(124, 58, 237, 0.3)" if canSend else "none")),
-                "transition": "all 0.2s ease"
+            styles={{
+                "root": {
+                    "background": (ORANGE if canSend else "rgba(255,255,255,0.08)"),
+                    "color": (TEXT if canSend else MUTED),
+                    "border": (("1px solid rgba(249,115,22,0.35)" if canSend else "1px solid rgba(255,255,255,0.10)")),
+                    "boxShadow": (("0 8px 22px rgba(249,115,22,0.18)" if canSend else "none")),
+                    "transition": "all 0.2s ease"
+                }
             }}
         >
             <IconSend size={20} />
@@ -99,12 +114,12 @@ def:pub ChatInput(
         p="md"
         radius={0}
         style={{
-            "borderTop": "1px solid rgba(255,255,255,0.06)",
-            "background": "rgba(15,15,20,0.95)",
+            "borderTop": "1px solid " + BORDER,
+            "background": TOPBAR_BG,
             "backdropFilter": "blur(10px)"
         }}
     >
-        <Box maw={900} mx="auto">
+        <Box maw={980} mx="auto">
             <form onSubmit={handleSubmit}>
                 <Group gap="md" align="flex-end">
                     <Box style={{"flex": "1"}}>
@@ -122,22 +137,24 @@ def:pub ChatInput(
                             size="md"
                             styles={{
                                 "input": {
-                                    "background": "rgba(255,255,255,0.05)",
-                                    "border": "1px solid rgba(255,255,255,0.1)",
-                                    "color": "white",
+                                    "background": "rgba(17,17,17,0.90)",
+                                    "border": "1px solid rgba(255,255,255,0.10)",
+                                    "color": TEXT,
                                     "fontSize": "15px",
-                                    "padding": "12px 20px",
+                                    "padding": "14px 18px",
+                                    "boxShadow": "0 10px 35px rgba(0,0,0,0.35)",
                                     "transition": "all 0.2s ease"
                                 }
                             }}
                         />
                     </Box>
-                    {((stopButton if isLoading and onStop else sendButton))}
+
+                    {(stopButton if isLoading and onStop else sendButton)}
                 </Group>
             </form>
 
             <Box mt="xs" ta="center">
-                <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.4)"}}>
+                <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.35)"}}>
                     {"Press Enter to send, Shift+Enter for new line"}
                 </span>
             </Box>
