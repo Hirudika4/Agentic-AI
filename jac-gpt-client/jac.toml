@@ -27,6 +27,7 @@ tailwind-merge = "^2.2.0"
 "@mantine/hooks" = "^7.15.0"
 "@tabler/icons-react" = "^3.28.0"
 "@emotion/react" = "^11.14.0"
+react-error-boundary = "latest"
 
 [dependencies.npm.dev]
 "@jac-client/dev-deps" = "1.0.0"
