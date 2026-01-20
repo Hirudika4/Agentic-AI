@@ -1,5 +1,6 @@
 """Sidebar component with chat history and user actions using Mantine UI.
 Updated: sidebar is ALWAYS visible on desktop (>=1024px) and toggled only on mobile.
+Updated: uses /logo.png to match React JacGPT logo + alignment.
 """
 
 import from react { useState }
@@ -16,8 +17,7 @@ import from "@mantine/core" {
     Avatar,
     Tooltip,
     Divider,
-    UnstyledButton,
-    Badge
+    UnstyledButton
 }
 import from "@mantine/hooks" { useMediaQuery }
 import from "@tabler/icons-react" {
@@ -30,8 +30,7 @@ import from "@tabler/icons-react" {
     IconLogout,
     IconUserPlus,
     IconLogin,
-    IconMessage,
-    IconSparkles
+    IconMessage
 }
 import from ..hooks.useAuth { getUsernameFromToken }
 
@@ -69,6 +68,9 @@ def:pub Sidebar(
     PANEL = "rgba(255,255,255,0.04)";
     PANEL_BORDER = "rgba(255,255,255,0.08)";
     ORANGE = "#f97316";
+
+    # Static asset (must exist at public/logo.png)
+    LOGO_SRC = "/logo.png";
 
     def toggleExpanded() -> None {
         isExpanded = not isExpanded;
@@ -113,72 +115,102 @@ def:pub Sidebar(
         "background": BG,
         "borderRight": "1px solid " + BORDER,
         "zIndex": "50",
-        "transition": "all 0.3s ease",
+        "transition": "all 0.25s ease",
         "transform": (("translateX(0)" if shouldShow else "translateX(-100%)"))
     };
 
-    # Logo section (React-like)
-    logoSection = <Box p="md" style={{"borderBottom": "1px solid " + BORDER}}>
-        <Group justify="space-between">
+    # ===== Logo section (MATCH REACT) =====
+    logoSection = <Box
+        style={{
+            "padding": "14px 14px",
+            "borderBottom": "1px solid " + BORDER
+        }}
+    >
+        <Group justify="space-between" align="center" wrap="nowrap">
             {(
-                <Group gap="sm" style={{"opacity": (("1" if isExpanded else "0")), "transition": "opacity 0.2s ease"}}>
+                <Group gap="sm" align="center" wrap="nowrap">
+                    # Logo container (orange glow box like React)
                     <Box style={{
-                        "width": "36px",
-                        "height": "36px",
-                        "borderRadius": "10px",
-                        "background": "linear-gradient(135deg, " + ORANGE + " 0%, #ef4444 100%)",
+                        "width": "44px",
+                        "height": "44px",
+                        "borderRadius": "12px",
+                        "background": "rgba(249,115,22,0.12)",
+                        "border": "1px solid rgba(249,115,22,0.35)",
                         "display": "flex",
                         "alignItems": "center",
                         "justifyContent": "center",
-                        "boxShadow": "0 0 14px rgba(249, 115, 22, 0.25)"
+                        "boxShadow": "0 0 14px rgba(249,115,22,0.25)"
                     }}>
-                        <IconSparkles size={18} color="white" />
+                        <img
+                            src={LOGO_SRC}
+                            alt="Jaseci"
+                            style={{
+                                "width": "28px",
+                                "height": "28px",
+                                "objectFit": "contain",
+                                "display": "block"
+                            }}
+                        />
                     </Box>
-                    <Box>
-                        <Text fw={700} size="sm" c={TEXT}>Jaseci</Text>
-                        <Text size="xs" c={MUTED}>Jac programming companion</Text>
+
+                    <Box style={{"lineHeight": "1.1"}}>
+                        <Text fw={700} style={{"fontSize": "18px", "color": TEXT}}>
+                            Jaseci
+                        </Text>
+                        <Text style={{"fontSize": "12px", "color": MUTED, "marginTop": "2px"}}>
+                            Jac programming companion
+                        </Text>
                     </Box>
                 </Group>
                 if isExpanded
                 else
                 <Box mx="auto" style={{
-                    "width": "32px",
-                    "height": "32px",
-                    "borderRadius": "8px",
-                    "background": "linear-gradient(135deg, " + ORANGE + " 0%, #ef4444 100%)",
+                    "width": "44px",
+                    "height": "44px",
+                    "borderRadius": "12px",
+                    "background": "rgba(249,115,22,0.12)",
+                    "border": "1px solid rgba(249,115,22,0.35)",
                     "display": "flex",
                     "alignItems": "center",
-                    "justifyContent": "center"
+                    "justifyContent": "center",
+                    "boxShadow": "0 0 14px rgba(249,115,22,0.25)"
                 }}>
-                    <IconSparkles size={16} color="white" />
+                    <img
+                        src={LOGO_SRC}
+                        alt="Jaseci"
+                        style={{
+                            "width": "26px",
+                            "height": "26px",
+                            "objectFit": "contain",
+                            "display": "block"
+                        }}
+                    />
                 </Box>
             )}
 
-            <Group gap="xs">
+            <Group gap="xs" align="center" wrap="nowrap">
                 # Expand/collapse button - desktop only
                 <ActionIcon
                     onClick={toggleExpanded}
                     variant="subtle"
-                    color="gray"
                     size="sm"
                     radius="md"
                     visibleFrom="lg"
                     style={{"color": MUTED}}
                 >
-                    {((<IconChevronLeft size={16} />) if isExpanded else (<IconChevronRight size={16} />))}
+                    {((<IconChevronLeft size={18} />) if isExpanded else (<IconChevronRight size={18} />))}
                 </ActionIcon>
 
                 # Close button - mobile only
                 <ActionIcon
                     onClick={onToggle}
                     variant="subtle"
-                    color="gray"
                     size="sm"
                     radius="md"
                     hiddenFrom="lg"
                     style={{"color": MUTED}}
                 >
-                    <IconX size={16} />
+                    <IconX size={18} />
                 </ActionIcon>
             </Group>
         </Group>
@@ -195,16 +227,17 @@ def:pub Sidebar(
             leftSection={<IconPlus size={16} />}
             styles={{
                 "root": {
-                    "justifyContent": "flex-start",
-                    "background": "rgba(55, 65, 81, 0.8)",
+                    "justifyContent": "center",
+                    "background": "rgba(55, 65, 81, 0.80)",
                     "borderColor": "rgba(75, 85, 99, 1)",
-                    "color": TEXT
+                    "color": TEXT,
+                    "height": "44px"
                 },
                 "label": {
                     "display": (("block" if isExpanded else "none"))
                 },
                 "section": {
-                    "marginRight": (("8px" if isExpanded else "0px"))
+                    "marginRight": (("10px" if isExpanded else "0px"))
                 }
             }}
         >
@@ -360,7 +393,8 @@ def:pub Sidebar(
                             leftSection={<IconUserPlus size={16} />}
                             style={{
                                 "background": ORANGE,
-                                "color": "white"
+                                "color": "white",
+                                "height": "44px"
                             }}
                         >
                             Sign Up
@@ -377,7 +411,8 @@ def:pub Sidebar(
                             styles={{
                                 "root": {
                                     "borderColor": ORANGE,
-                                    "color": ORANGE
+                                    "color": ORANGE,
+                                    "height": "44px"
                                 }
                             }}
                         >
