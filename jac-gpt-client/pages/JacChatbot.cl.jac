@@ -22,7 +22,8 @@ import from "@tabler/icons-react" {
     IconBook,
     IconMenu2,
     IconSparkles,
-    IconMessageCircle
+    IconMessageCircle,
+    IconX
 }
 import from ..hooks.useChat { useChat }
 import from ..components.ChatMessage { ChatMessage }
@@ -78,18 +79,6 @@ def:pub JacChatbot() -> any {
         loadingContent = loadingIndicator;
     }
 
-    # Message count display for guests
-    messageCountDisplay = None;
-    if not isAuthenticated {
-        messageCountDisplay = <Badge
-            variant="light"
-            color="violet"
-            size="sm"
-        >
-            {chat.messageCount}{" / "}{chat.maxFreeMessages}{" free messages"}
-        </Badge>;
-    }
-
     # Messages content or empty state
     messagesContent = <EmptyState onSendMessage={chat.handleSendMessage} />;
     if hasMessages {
@@ -103,11 +92,19 @@ def:pub JacChatbot() -> any {
     }
 
     # Determine button variant and color based on docPanelOpen
-    buttonVariant = "subtle";
+    buttonVariant = "outline";
     buttonColor = "gray";
+    buttonText = "Show Docs";
+    buttonIcon = <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+    </svg>;
+    
     if docPanelOpen {
         buttonVariant = "filled";
-        buttonColor = "violet";
+        buttonColor = "orange";
+        buttonText = "Hide Docs";
+        buttonIcon = <IconX size={16} />;
     }
 
     # Determine chat area width
@@ -119,7 +116,7 @@ def:pub JacChatbot() -> any {
     # Doc panel element
     docPanelElement = None;
     if docPanelOpen {
-        docPanelElement = <Box style={{"width": "50%", "borderLeft": "1px solid rgba(255,255,255,0.06)"}}>
+        docPanelElement = <Box style={{"width": "50%", "borderLeft": "1px solid rgba(255,255,255,0.06)", "height": "100%", "overflow": "hidden", "display": "flex", "flexDirection": "column"}}>
             <DocumentationPanel
                 message={chat.lastUserMessage}
                 suggestions={chat.docSuggestions}
@@ -129,7 +126,7 @@ def:pub JacChatbot() -> any {
         </Box>;
     }
 
-    return <Box style={{"display": "flex", "height": "100vh", "background": "#0a0a0f"}}>
+    return <Box style={{"display": "flex", "height": "100vh", "background": "#0a0a0f", "overflow": "hidden"}}>
         <Sidebar
             isOpen={sidebarOpen}
             onToggle={toggleSidebar}
@@ -143,70 +140,86 @@ def:pub JacChatbot() -> any {
             maxFreeMessages={chat.maxFreeMessages}
         />
 
-        <Box style={{"flex": "1", "display": "flex", "flexDirection": "column", "minWidth": "0"}}>
-            <Paper
-                p="sm"
-                px="md"
-                radius={0}
-                style={{
-                    "borderBottom": "1px solid rgba(255,255,255,0.06)",
-                    "background": "rgba(15,15,20,0.95)",
-                    "backdropFilter": "blur(10px)"
-                }}
-            >
-                <Group justify="space-between">
-                    <Group gap="md">
-                        <Burger
-                            opened={sidebarOpen}
-                            onClick={toggleSidebar}
-                            hiddenFrom="lg"
-                            size="sm"
-                            color="gray"
-                        />
-                        <Group gap="xs">
-                            <Box style={{"width": "28px", "height": "28px", "borderRadius": "6px", "background": "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", "display": "flex", "alignItems": "center", "justifyContent": "center"}}>
-                                <Text c="white" fw={700} size="xs">J</Text>
-                            </Box>
-                            <Text fw={600} size="lg" c="white">
-                                Jac GPT
-                            </Text>
+        <Box style={{"flex": "1", "display": "flex", "overflow": "hidden", "minWidth": "0"}}>
+            <Box style={{"display": "flex", "flexDirection": "column", "height": "100%", "width": chatAreaWidth, "minWidth": "0"}}>
+                <Paper
+                    p="sm"
+                    px="md"
+                    radius={0}
+                    style={{
+                        "borderBottom": "1px solid rgba(255,255,255,0.06)",
+                        "background": "rgba(15,15,20,0.95)",
+                        "backdropFilter": "blur(10px)",
+                        "flexShrink": "0"
+                    }}
+                >
+                    <Group justify="space-between">
+                        <Group gap="md">
+                            <Burger
+                                opened={sidebarOpen}
+                                onClick={toggleSidebar}
+                                hiddenFrom="lg"
+                                size="sm"
+                                color="gray"
+                            />
+                            <Group gap="xs">
+                                <Box style={{"width": "28px", "height": "28px", "borderRadius": "6px", "background": "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)", "display": "flex", "alignItems": "center", "justifyContent": "center"}}>
+                                    <Text c="white" fw={700} size="xs">J</Text>
+                                </Box>
+                                <Text fw={600} size="lg" c="white">
+                                    Jac GPT
+                                </Text>
+                            </Group>
+                        </Group>
+
+                        <Group gap="sm">
+                            <Button
+                                onClick={toggleDocPanel}
+                                variant={buttonVariant}
+                                color={buttonColor}
+                                size="sm"
+                                radius="md"
+                                leftSection={buttonIcon}
+                                visibleFrom="md"
+                                styles={{
+                                    "root": {
+                                        "backgroundColor": ("transparent" if not docPanelOpen else None),
+                                        "color": ("#9ca3af" if not docPanelOpen else None),
+                                        "border": ("1px solid #374151" if not docPanelOpen else None),
+                                        "transition": "all 0.2s",
+                                        "fontWeight": "500",
+                                        ":hover": {
+                                            "backgroundColor": ("rgba(255, 255, 255, 0.05)" if not docPanelOpen else None),
+                                            "color": ("#ffffff" if not docPanelOpen else None),
+                                            "borderColor": ("#4b5563" if not docPanelOpen else None)
+                                        }
+                                    }
+                                }}
+                            >
+                                {buttonText}
+                            </Button>
                         </Group>
                     </Group>
+                </Paper>
 
-                    <Group gap="sm">
-                        <Button
-                            onClick={toggleDocPanel}
-                            variant={buttonVariant}
-                            color={buttonColor}
-                            size="sm"
-                            radius="md"
-                            leftSection={<IconBook size={16} />}
-                            visibleFrom="md"
-                        >
-                            Show Docs
-                        </Button>
-                        {messageCountDisplay}
-                    </Group>
-                </Group>
-            </Paper>
-
-            <Box style={{"flex": "1", "display": "flex", "overflow": "hidden"}}>
-                <Box style={{"flex": "1", "display": "flex", "flexDirection": "column", "minWidth": "0", "width": chatAreaWidth}}>
-                    <ScrollArea style={{"flex": "1"}} type="scroll">
+                <Box style={{"flex": "1", "display": "flex", "flexDirection": "column", "minWidth": "0", "minHeight": "0", "overflow": "hidden"}}>
+                    <ScrollArea style={{"flex": "1", "height": "100%"}} type="scroll" viewportProps={{"style": {"height": "100%"}}}>
                         {messagesContent}
                     </ScrollArea>
 
-                    <ChatInput
-                        onSendMessage={chat.handleSendMessage}
-                        disabled={False}
-                        placeholder="Ask me anything about Jac..."
-                        isLoading={chat.isLoading}
-                        onStop={chat.handleStopGeneration}
-                    />
+                    <Box style={{"flexShrink": "0"}}>
+                        <ChatInput
+                            onSendMessage={chat.handleSendMessage}
+                            disabled={False}
+                            placeholder="Ask me anything about Jac..."
+                            isLoading={chat.isLoading}
+                            onStop={chat.handleStopGeneration}
+                        />
+                    </Box>
                 </Box>
-
-                {docPanelElement}
             </Box>
+
+            {docPanelElement}
         </Box>
     </Box>;
 }
