@@ -223,7 +223,6 @@ def:pub JacChatbot() -> any {
                             </Text>
                         </Group>
                     </Group>
-                </Paper>
 
                     <Group gap="sm">
                         <Button
@@ -276,9 +275,9 @@ def:pub JacChatbot() -> any {
                         />
                     </Box>
                 </Box>
-            </Box>
 
-            {docPanelElement}
+                {docPanelElement}
+            </Box>
         </Box>
     </Box>;
 }
