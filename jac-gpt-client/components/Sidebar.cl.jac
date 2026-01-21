@@ -1,5 +1,8 @@
 """Sidebar component with chat history and user actions using Mantine UI.
 Updated: sidebar is ALWAYS visible on desktop (>=1024px) and toggled only on mobile.
+Updated: uses /logo.png to match React JacGPT logo + alignment.
+Fix: New Chat (+) centered properly.
+Fix: Remove extra empty gap between Sign buttons and Help & FAQ (better layout).
 """
 
 import from react { useState }
@@ -16,8 +19,7 @@ import from "@mantine/core" {
     Avatar,
     Tooltip,
     Divider,
-    UnstyledButton,
-    Badge
+    UnstyledButton
 }
 import from "@mantine/hooks" { useMediaQuery }
 import from "@tabler/icons-react" {
@@ -30,8 +32,7 @@ import from "@tabler/icons-react" {
     IconLogout,
     IconUserPlus,
     IconLogin,
-    IconMessage,
-    IconSparkles
+    IconMessage
 }
 import from ..hooks.useAuth { getUsernameFromToken }
 
@@ -69,6 +70,9 @@ def:pub Sidebar(
     PANEL = "rgba(255,255,255,0.04)";
     PANEL_BORDER = "rgba(255,255,255,0.08)";
     ORANGE = "#f97316";
+
+    # Static asset (must exist at public/logo.png)
+    LOGO_SRC = "/logo.png";
 
     def toggleExpanded() -> None {
         isExpanded = not isExpanded;
@@ -113,180 +117,207 @@ def:pub Sidebar(
         "background": BG,
         "borderRight": "1px solid " + BORDER,
         "zIndex": "50",
-        "transition": "all 0.3s ease",
+        "transition": "all 0.25s ease",
         "transform": (("translateX(0)" if shouldShow else "translateX(-100%)"))
     };
 
-    # Logo section (React-like)
-    logoSection = <Box p="md" style={{"borderBottom": "1px solid " + BORDER}}>
-        <Group justify="space-between">
+    # ===== Logo section =====
+    logoSection = <Box
+        style={{
+            "padding": "14px 14px",
+            "borderBottom": "1px solid " + BORDER
+        }}
+    >
+        <Group justify="space-between" align="center" wrap="nowrap">
             {(
-                <Group gap="sm" style={{"opacity": (("1" if isExpanded else "0")), "transition": "opacity 0.2s ease"}}>
+                <Group gap="sm" align="center" wrap="nowrap">
                     <Box style={{
-                        "width": "36px",
-                        "height": "36px",
-                        "borderRadius": "10px",
-                        "background": "linear-gradient(135deg, " + ORANGE + " 0%, #ef4444 100%)",
+                        "width": "44px",
+                        "height": "44px",
+                        "borderRadius": "12px",
+                        "background": "rgba(249,115,22,0.12)",
+                        "border": "1px solid rgba(249,115,22,0.35)",
                         "display": "flex",
                         "alignItems": "center",
                         "justifyContent": "center",
-                        "boxShadow": "0 0 14px rgba(249, 115, 22, 0.25)"
+                        "boxShadow": "0 0 14px rgba(249,115,22,0.25)"
                     }}>
-                        <IconSparkles size={18} color="white" />
+                        <img
+                            src={LOGO_SRC}
+                            alt="Jaseci"
+                            style={{
+                                "width": "28px",
+                                "height": "28px",
+                                "objectFit": "contain",
+                                "display": "block"
+                            }}
+                        />
                     </Box>
-                    <Box>
-                        <Text fw={700} size="sm" c={TEXT}>Jaseci</Text>
-                        <Text size="xs" c={MUTED}>Jac programming companion</Text>
+
+                    <Box style={{"lineHeight": "1.1"}}>
+                        <Text fw={700} style={{"fontSize": "18px", "color": TEXT}}>
+                            Jaseci
+                        </Text>
+                        <Text style={{"fontSize": "12px", "color": MUTED, "marginTop": "2px"}}>
+                            Jac programming companion
+                        </Text>
                     </Box>
                 </Group>
                 if isExpanded
                 else
                 <Box mx="auto" style={{
-                    "width": "32px",
-                    "height": "32px",
-                    "borderRadius": "8px",
-                    "background": "linear-gradient(135deg, " + ORANGE + " 0%, #ef4444 100%)",
+                    "width": "44px",
+                    "height": "44px",
+                    "borderRadius": "12px",
+                    "background": "rgba(249,115,22,0.12)",
+                    "border": "1px solid rgba(249,115,22,0.35)",
                     "display": "flex",
                     "alignItems": "center",
-                    "justifyContent": "center"
+                    "justifyContent": "center",
+                    "boxShadow": "0 0 14px rgba(249,115,22,0.25)"
                 }}>
-                    <IconSparkles size={16} color="white" />
+                    <img
+                        src={LOGO_SRC}
+                        alt="Jaseci"
+                        style={{
+                            "width": "26px",
+                            "height": "26px",
+                            "objectFit": "contain",
+                            "display": "block"
+                        }}
+                    />
                 </Box>
             )}
 
-            <Group gap="xs">
-                # Expand/collapse button - desktop only
+            <Group gap="xs" align="center" wrap="nowrap">
                 <ActionIcon
                     onClick={toggleExpanded}
                     variant="subtle"
-                    color="gray"
                     size="sm"
                     radius="md"
                     visibleFrom="lg"
                     style={{"color": MUTED}}
                 >
-                    {((<IconChevronLeft size={16} />) if isExpanded else (<IconChevronRight size={16} />))}
+                    {((<IconChevronLeft size={18} />) if isExpanded else (<IconChevronRight size={18} />))}
                 </ActionIcon>
 
-                # Close button - mobile only
                 <ActionIcon
                     onClick={onToggle}
                     variant="subtle"
-                    color="gray"
                     size="sm"
                     radius="md"
                     hiddenFrom="lg"
                     style={{"color": MUTED}}
                 >
-                    <IconX size={16} />
+                    <IconX size={18} />
                 </ActionIcon>
             </Group>
         </Group>
     </Box>;
 
-    # New chat button (React-like)
+    # ===== New Chat button (CENTERED ICON + TEXT) =====
     newChatButton = <Box px="md" py="sm">
         <Button
             onClick={onNewChat}
             disabled={isLoading}
             fullWidth={True}
-            variant="outline"
             radius="md"
-            leftSection={<IconPlus size={16} />}
+            variant="outline"
             styles={{
                 "root": {
-                    "justifyContent": "flex-start",
-                    "background": "rgba(55, 65, 81, 0.8)",
+                    "background": "rgba(55, 65, 81, 0.80)",
                     "borderColor": "rgba(75, 85, 99, 1)",
-                    "color": TEXT
-                },
-                "label": {
-                    "display": (("block" if isExpanded else "none"))
-                },
-                "section": {
-                    "marginRight": (("8px" if isExpanded else "0px"))
+                    "color": TEXT,
+                    "height": "44px",
+                    "paddingLeft": (("14px" if isExpanded else "0px")),
+                    "paddingRight": (("14px" if isExpanded else "0px"))
                 }
             }}
         >
-            {("New Chat" if isExpanded else "")}
+            <Group justify="center" gap="sm" style={{"width": "100%"}}>
+                <IconPlus size={16} />
+                {(<Text fw={600} style={{"color": TEXT, "fontSize": "14px"}}>New Chat</Text>) if isExpanded else None}
+            </Group>
         </Button>
     </Box>;
 
-    # Chat sessions list (React-like)
-    chatSessionsList = None;
-    if isExpanded {
-        sessionsContent = <Text size="sm" c={MUTED2} ta="center" py="lg">No chat history yet</Text>;
+    # ===== Chat sessions list =====
+    sessionsContent = <Text size="sm" c={MUTED2} ta="center" py="lg">No chat history yet</Text>;
 
-        if chatSessions.length > 0 {
-            sessionsContent = <Stack gap={4}>
-                {chatSessions.map(lambda session: any -> any {
-                    isCurrentSession = session.id == currentSessionId;
+    if isExpanded and chatSessions.length > 0 {
+        sessionsContent = <Stack gap={4}>
+            {chatSessions.map(lambda session: any -> any {
+                isCurrentSession = session.id == currentSessionId;
 
-                    return <UnstyledButton
-                        key={session.id}
-                        onClick={lambda -> None {
-                            if not isLoading and onLoadSession {
-                                onLoadSession(session.id);
+                return <UnstyledButton
+                    key={session.id}
+                    onClick={lambda -> None {
+                        if not isLoading and onLoadSession {
+                            onLoadSession(session.id);
+                        }
+                    }}
+                    style={{
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": "8px",
+                        "padding": "8px 12px",
+                        "borderRadius": "8px",
+                        "width": "100%",
+                        "background": (("rgba(55, 65, 81, 0.8)" if isCurrentSession else "transparent")),
+                        "color": (TEXT if isCurrentSession else "#d1d5db"),
+                        "opacity": (("0.5" if isLoading else "1")),
+                        "cursor": (("not-allowed" if isLoading else "pointer")),
+                        "transition": "all 0.2s ease"
+                    }}
+                >
+                    <IconMessage size={14} color={MUTED} />
+                    <Text
+                        size="sm"
+                        style={{
+                            "flex": "1",
+                            "overflow": "hidden",
+                            "textOverflow": "ellipsis",
+                            "whiteSpace": "nowrap"
+                        }}
+                        c={(TEXT if isCurrentSession else "#d1d5db")}
+                    >
+                        {session.title}
+                    </Text>
+
+                    <ActionIcon
+                        onClick={lambda e: any -> None {
+                            e.stopPropagation();
+                            if not isLoading and onDeleteSession {
+                                onDeleteSession(session.id);
                             }
                         }}
-                        style={{
-                            "display": "flex",
-                            "alignItems": "center",
-                            "gap": "8px",
-                            "padding": "8px 12px",
-                            "borderRadius": "8px",
-                            "width": "100%",
-                            "background": (("rgba(55, 65, 81, 0.8)" if isCurrentSession else "transparent")),
-                            "color": (TEXT if isCurrentSession else "#d1d5db"),
-                            "opacity": (("0.5" if isLoading else "1")),
-                            "cursor": (("not-allowed" if isLoading else "pointer")),
-                            "transition": "all 0.2s ease"
-                        }}
+                        disabled={isLoading}
+                        variant="subtle"
+                        color="red"
+                        size="xs"
+                        radius="sm"
+                        style={{"opacity": "0.75"}}
                     >
-                        <IconMessage size={14} color={MUTED} />
-                        <Text
-                            size="sm"
-                            style={{
-                                "flex": "1",
-                                "overflow": "hidden",
-                                "textOverflow": "ellipsis",
-                                "whiteSpace": "nowrap"
-                            }}
-                            c={(TEXT if isCurrentSession else "#d1d5db")}
-                        >
-                            {session.title}
-                        </Text>
+                        <IconTrash size={12} />
+                    </ActionIcon>
+                </UnstyledButton>;
+            })}
+        </Stack>;
+    }
 
-                        <ActionIcon
-                            onClick={lambda e: any -> None {
-                                e.stopPropagation();
-                                if not isLoading and onDeleteSession {
-                                    onDeleteSession(session.id);
-                                }
-                            }}
-                            disabled={isLoading}
-                            variant="subtle"
-                            color="red"
-                            size="xs"
-                            radius="sm"
-                            style={{"opacity": "0.75"}}
-                        >
-                            <IconTrash size={12} />
-                        </ActionIcon>
-                    </UnstyledButton>;
-                })}
-            </Stack>;
-        }
-
+    chatSessionsList = None;
+    if isExpanded {
         chatSessionsList = <Box px="md" style={{"flex": "1", "overflow": "hidden"}}>
             <Text size="xs" fw={600} c={MUTED} tt="uppercase" mb="sm">Recent Chats</Text>
-            <ScrollArea style={{"height": "calc(100vh - 410px)"}} type="scroll">
+            <ScrollArea style={{"height": "100%"}} type="scroll">
                 {sessionsContent}
             </ScrollArea>
         </Box>;
+    } else {
+        chatSessionsList = <Box style={{"flex": "1"}} />;
     }
 
-    # Authenticated section (expanded)
+    # ===== Authenticated section (expanded) =====
     userSection = None;
     if isAuthenticated and isExpanded {
         userSection = <Box px="md" py="sm">
@@ -326,10 +357,10 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # Guest section (expanded) - React-like free messages + buttons
+    # ===== Guest section (expanded) =====
     guestSection = None;
     if not isAuthenticated and isExpanded {
-        guestSection = <Box px="md" py="sm">
+        guestSection = <Box px="md" pt="sm" pb="sm">
             <Paper
                 p="sm"
                 radius="md"
@@ -360,7 +391,8 @@ def:pub Sidebar(
                             leftSection={<IconUserPlus size={16} />}
                             style={{
                                 "background": ORANGE,
-                                "color": "white"
+                                "color": "white",
+                                "height": "44px"
                             }}
                         >
                             Sign Up
@@ -377,7 +409,8 @@ def:pub Sidebar(
                             styles={{
                                 "root": {
                                     "borderColor": ORANGE,
-                                    "color": ORANGE
+                                    "color": ORANGE,
+                                    "height": "44px"
                                 }
                             }}
                         >
@@ -389,11 +422,11 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # Collapsed auth buttons
+    # ===== Collapsed auth buttons =====
     collapsedAuthSection = None;
     if not isExpanded {
         if isAuthenticated {
-            collapsedAuthSection = <Stack gap="xs" align="center" px="xs">
+            collapsedAuthSection = <Stack gap="xs" align="center" px="xs" pt="sm">
                 <Tooltip label="Log out" position="right">
                     <ActionIcon
                         onClick={handleLogout}
@@ -407,7 +440,7 @@ def:pub Sidebar(
                 </Tooltip>
             </Stack>;
         } else {
-            collapsedAuthSection = <Stack gap="xs" align="center" px="xs">
+            collapsedAuthSection = <Stack gap="xs" align="center" px="xs" pt="sm">
                 <Tooltip label="Sign Up" position="right">
                     <Link to="/register">
                         <ActionIcon
@@ -437,8 +470,8 @@ def:pub Sidebar(
         }
     }
 
-    # Help button
-    helpButton = <Box px={(("md" if isExpanded else "xs"))} py="sm">
+    # ===== Help button (tight spacing) =====
+    helpButton = <Box px={(("md" if isExpanded else "xs"))} pt="xs" pb="sm">
         <Tooltip label="Help & FAQ" position="right" disabled={isExpanded}>
             <Button
                 onClick={lambda -> None { window.open("https://www.jac-lang.org/learn/data_spatial/FAQ/", "_blank"); }}
@@ -456,7 +489,7 @@ def:pub Sidebar(
         </Tooltip>
     </Box>;
 
-    # Status indicator (React-like pill)
+    # ===== Status indicator =====
     statusIndicator = None;
     if isExpanded {
         dotColor = (("#22c55e" if isAuthenticated else ORANGE));
@@ -481,6 +514,16 @@ def:pub Sidebar(
         </Box>;
     }
 
+    # ===== Bottom area: NO auto-gap, always tight =====
+    bottomArea = <Box>
+        <Divider color={BORDER} />
+        {userSection}
+        {guestSection}
+        {collapsedAuthSection}
+        {helpButton}
+        {statusIndicator}
+    </Box>;
+
     return <>
         {mobileOverlay}
 
@@ -488,16 +531,12 @@ def:pub Sidebar(
             <Box style={{"display": "flex", "flexDirection": "column", "height": "100%"}}>
                 {logoSection}
                 {newChatButton}
-                {chatSessionsList}
 
-                <Box style={{"marginTop": "auto"}}>
-                    <Divider color={BORDER} />
-                    {userSection}
-                    {guestSection}
-                    {collapsedAuthSection}
-                    {helpButton}
-                    {statusIndicator}
+                <Box style={{"flex": "1", "minHeight": "0"}}>
+                    {chatSessionsList}
                 </Box>
+
+                {bottomArea}
             </Box>
         </Box>
 
