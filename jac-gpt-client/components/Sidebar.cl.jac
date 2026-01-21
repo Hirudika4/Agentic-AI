@@ -1,6 +1,8 @@
 """Sidebar component with chat history and user actions using Mantine UI.
 Updated: sidebar is ALWAYS visible on desktop (>=1024px) and toggled only on mobile.
 Updated: uses /logo.png to match React JacGPT logo + alignment.
+Fix: New Chat (+) centered properly.
+Fix: Remove extra empty gap between Sign buttons and Help & FAQ (better layout).
 """
 
 import from react { useState }
@@ -119,7 +121,7 @@ def:pub Sidebar(
         "transform": (("translateX(0)" if shouldShow else "translateX(-100%)"))
     };
 
-    # ===== Logo section (MATCH REACT) =====
+    # ===== Logo section =====
     logoSection = <Box
         style={{
             "padding": "14px 14px",
@@ -129,7 +131,6 @@ def:pub Sidebar(
         <Group justify="space-between" align="center" wrap="nowrap">
             {(
                 <Group gap="sm" align="center" wrap="nowrap">
-                    # Logo container (orange glow box like React)
                     <Box style={{
                         "width": "44px",
                         "height": "44px",
@@ -189,7 +190,6 @@ def:pub Sidebar(
             )}
 
             <Group gap="xs" align="center" wrap="nowrap">
-                # Expand/collapse button - desktop only
                 <ActionIcon
                     onClick={toggleExpanded}
                     variant="subtle"
@@ -201,7 +201,6 @@ def:pub Sidebar(
                     {((<IconChevronLeft size={18} />) if isExpanded else (<IconChevronRight size={18} />))}
                 </ActionIcon>
 
-                # Close button - mobile only
                 <ActionIcon
                     onClick={onToggle}
                     variant="subtle"
@@ -216,110 +215,109 @@ def:pub Sidebar(
         </Group>
     </Box>;
 
-    # New chat button (React-like)
+    # ===== New Chat button (CENTERED ICON + TEXT) =====
     newChatButton = <Box px="md" py="sm">
         <Button
             onClick={onNewChat}
             disabled={isLoading}
             fullWidth={True}
-            variant="outline"
             radius="md"
-            leftSection={<IconPlus size={16} />}
+            variant="outline"
             styles={{
                 "root": {
-                    "justifyContent": "center",
                     "background": "rgba(55, 65, 81, 0.80)",
                     "borderColor": "rgba(75, 85, 99, 1)",
                     "color": TEXT,
-                    "height": "44px"
-                },
-                "label": {
-                    "display": (("block" if isExpanded else "none"))
-                },
-                "section": {
-                    "marginRight": (("10px" if isExpanded else "0px"))
+                    "height": "44px",
+                    "paddingLeft": (("14px" if isExpanded else "0px")),
+                    "paddingRight": (("14px" if isExpanded else "0px"))
                 }
             }}
         >
-            {("New Chat" if isExpanded else "")}
+            <Group justify="center" gap="sm" style={{"width": "100%"}}>
+                <IconPlus size={16} />
+                {(<Text fw={600} style={{"color": TEXT, "fontSize": "14px"}}>New Chat</Text>) if isExpanded else None}
+            </Group>
         </Button>
     </Box>;
 
-    # Chat sessions list (React-like)
-    chatSessionsList = None;
-    if isExpanded {
-        sessionsContent = <Text size="sm" c={MUTED2} ta="center" py="lg">No chat history yet</Text>;
+    # ===== Chat sessions list =====
+    sessionsContent = <Text size="sm" c={MUTED2} ta="center" py="lg">No chat history yet</Text>;
 
-        if chatSessions.length > 0 {
-            sessionsContent = <Stack gap={4}>
-                {chatSessions.map(lambda session: any -> any {
-                    isCurrentSession = session.id == currentSessionId;
+    if isExpanded and chatSessions.length > 0 {
+        sessionsContent = <Stack gap={4}>
+            {chatSessions.map(lambda session: any -> any {
+                isCurrentSession = session.id == currentSessionId;
 
-                    return <UnstyledButton
-                        key={session.id}
-                        onClick={lambda -> None {
-                            if not isLoading and onLoadSession {
-                                onLoadSession(session.id);
+                return <UnstyledButton
+                    key={session.id}
+                    onClick={lambda -> None {
+                        if not isLoading and onLoadSession {
+                            onLoadSession(session.id);
+                        }
+                    }}
+                    style={{
+                        "display": "flex",
+                        "alignItems": "center",
+                        "gap": "8px",
+                        "padding": "8px 12px",
+                        "borderRadius": "8px",
+                        "width": "100%",
+                        "background": (("rgba(55, 65, 81, 0.8)" if isCurrentSession else "transparent")),
+                        "color": (TEXT if isCurrentSession else "#d1d5db"),
+                        "opacity": (("0.5" if isLoading else "1")),
+                        "cursor": (("not-allowed" if isLoading else "pointer")),
+                        "transition": "all 0.2s ease"
+                    }}
+                >
+                    <IconMessage size={14} color={MUTED} />
+                    <Text
+                        size="sm"
+                        style={{
+                            "flex": "1",
+                            "overflow": "hidden",
+                            "textOverflow": "ellipsis",
+                            "whiteSpace": "nowrap"
+                        }}
+                        c={(TEXT if isCurrentSession else "#d1d5db")}
+                    >
+                        {session.title}
+                    </Text>
+
+                    <ActionIcon
+                        onClick={lambda e: any -> None {
+                            e.stopPropagation();
+                            if not isLoading and onDeleteSession {
+                                onDeleteSession(session.id);
                             }
                         }}
-                        style={{
-                            "display": "flex",
-                            "alignItems": "center",
-                            "gap": "8px",
-                            "padding": "8px 12px",
-                            "borderRadius": "8px",
-                            "width": "100%",
-                            "background": (("rgba(55, 65, 81, 0.8)" if isCurrentSession else "transparent")),
-                            "color": (TEXT if isCurrentSession else "#d1d5db"),
-                            "opacity": (("0.5" if isLoading else "1")),
-                            "cursor": (("not-allowed" if isLoading else "pointer")),
-                            "transition": "all 0.2s ease"
-                        }}
+                        disabled={isLoading}
+                        variant="subtle"
+                        color="red"
+                        size="xs"
+                        radius="sm"
+                        style={{"opacity": "0.75"}}
                     >
-                        <IconMessage size={14} color={MUTED} />
-                        <Text
-                            size="sm"
-                            style={{
-                                "flex": "1",
-                                "overflow": "hidden",
-                                "textOverflow": "ellipsis",
-                                "whiteSpace": "nowrap"
-                            }}
-                            c={(TEXT if isCurrentSession else "#d1d5db")}
-                        >
-                            {session.title}
-                        </Text>
+                        <IconTrash size={12} />
+                    </ActionIcon>
+                </UnstyledButton>;
+            })}
+        </Stack>;
+    }
 
-                        <ActionIcon
-                            onClick={lambda e: any -> None {
-                                e.stopPropagation();
-                                if not isLoading and onDeleteSession {
-                                    onDeleteSession(session.id);
-                                }
-                            }}
-                            disabled={isLoading}
-                            variant="subtle"
-                            color="red"
-                            size="xs"
-                            radius="sm"
-                            style={{"opacity": "0.75"}}
-                        >
-                            <IconTrash size={12} />
-                        </ActionIcon>
-                    </UnstyledButton>;
-                })}
-            </Stack>;
-        }
-
+    chatSessionsList = None;
+    if isExpanded {
         chatSessionsList = <Box px="md" style={{"flex": "1", "overflow": "hidden"}}>
             <Text size="xs" fw={600} c={MUTED} tt="uppercase" mb="sm">Recent Chats</Text>
-            <ScrollArea style={{"height": "calc(100vh - 410px)"}} type="scroll">
+            <ScrollArea style={{"height": "100%"}} type="scroll">
                 {sessionsContent}
             </ScrollArea>
         </Box>;
+    } else {
+        chatSessionsList = <Box style={{"flex": "1"}} />;
     }
 
-    # Authenticated section (expanded)
+    # ===== Authenticated section (expanded) =====
     userSection = None;
     if isAuthenticated and isExpanded {
         userSection = <Box px="md" py="sm">
@@ -359,10 +357,10 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # Guest section (expanded) - React-like free messages + buttons
+    # ===== Guest section (expanded) =====
     guestSection = None;
     if not isAuthenticated and isExpanded {
-        guestSection = <Box px="md" py="sm">
+        guestSection = <Box px="md" pt="sm" pb="sm">
             <Paper
                 p="sm"
                 radius="md"
@@ -424,11 +422,11 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # Collapsed auth buttons
+    # ===== Collapsed auth buttons =====
     collapsedAuthSection = None;
     if not isExpanded {
         if isAuthenticated {
-            collapsedAuthSection = <Stack gap="xs" align="center" px="xs">
+            collapsedAuthSection = <Stack gap="xs" align="center" px="xs" pt="sm">
                 <Tooltip label="Log out" position="right">
                     <ActionIcon
                         onClick={handleLogout}
@@ -442,7 +440,7 @@ def:pub Sidebar(
                 </Tooltip>
             </Stack>;
         } else {
-            collapsedAuthSection = <Stack gap="xs" align="center" px="xs">
+            collapsedAuthSection = <Stack gap="xs" align="center" px="xs" pt="sm">
                 <Tooltip label="Sign Up" position="right">
                     <Link to="/register">
                         <ActionIcon
@@ -472,8 +470,8 @@ def:pub Sidebar(
         }
     }
 
-    # Help button
-    helpButton = <Box px={(("md" if isExpanded else "xs"))} py="sm">
+    # ===== Help button (tight spacing) =====
+    helpButton = <Box px={(("md" if isExpanded else "xs"))} pt="xs" pb="sm">
         <Tooltip label="Help & FAQ" position="right" disabled={isExpanded}>
             <Button
                 onClick={lambda -> None { window.open("https://www.jac-lang.org/learn/data_spatial/FAQ/", "_blank"); }}
@@ -491,7 +489,7 @@ def:pub Sidebar(
         </Tooltip>
     </Box>;
 
-    # Status indicator (React-like pill)
+    # ===== Status indicator =====
     statusIndicator = None;
     if isExpanded {
         dotColor = (("#22c55e" if isAuthenticated else ORANGE));
@@ -516,6 +514,16 @@ def:pub Sidebar(
         </Box>;
     }
 
+    # ===== Bottom area: NO auto-gap, always tight =====
+    bottomArea = <Box>
+        <Divider color={BORDER} />
+        {userSection}
+        {guestSection}
+        {collapsedAuthSection}
+        {helpButton}
+        {statusIndicator}
+    </Box>;
+
     return <>
         {mobileOverlay}
 
@@ -523,16 +531,12 @@ def:pub Sidebar(
             <Box style={{"display": "flex", "flexDirection": "column", "height": "100%"}}>
                 {logoSection}
                 {newChatButton}
-                {chatSessionsList}
 
-                <Box style={{"marginTop": "auto"}}>
-                    <Divider color={BORDER} />
-                    {userSection}
-                    {guestSection}
-                    {collapsedAuthSection}
-                    {helpButton}
-                    {statusIndicator}
+                <Box style={{"flex": "1", "minHeight": "0"}}>
+                    {chatSessionsList}
                 </Box>
+
+                {bottomArea}
             </Box>
         </Box>
 
