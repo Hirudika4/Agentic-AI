@@ -1,7 +1,6 @@
 """Documentation panel component for displaying doc suggestions."""
 
 import from react { useState, useEffect }
-import from ..utils.cn { cn }
 
 """Documentation panel with suggestions and iframe viewer."""
 def:pub DocumentationPanel(
@@ -18,23 +17,24 @@ def:pub DocumentationPanel(
     # Default documentation suggestions
     defaultSuggestions = [
         {
-            "url": "https://www.jac-lang.org/learn/introduction/",
-            "title": "Introduction to Jac",
-            "reason": "Perfect starting point for learning Jac programming language"
+            "url": "https://docs.jaseci.org/learn/tour/",
+            "title": "Introduction to Jac"
         },
         {
-            "url": "https://www.jac-lang.org/learn/data_spatial/nodes_and_edges/",
-            "title": "Nodes and Edges",
-            "reason": "Learn about Object-Spatial Programming with nodes and edges"
+            "url": "https://docs.jaseci.org/learn/data_spatial/nodes_and_edges/",
+            "title": "Nodes and Edges"
         },
         {
-            "url": "https://www.jac-lang.org/learn/jac-mtllm/quickstart/",
-            "title": "AI Integration",
-            "reason": "Discover how to integrate AI and LLM capabilities"
+            "url": "https://docs.jaseci.org/learn/data_spatial/walkers/",
+            "title": "Walkers"
+        },
+        {
+            "url": "https://docs.jaseci.org/ai-integration/",
+            "title": "AI Integration"
         }
     ];
 
-    # Ensure HTTPS for jac-lang.org URLs
+    # Ensure HTTPS for URLs
     def ensureHttpsUrl(url: str) -> str {
         if url.includes("jac-lang.org") and url.startsWith("http://") {
             return url.replace("http://", "https://");
@@ -54,15 +54,14 @@ def:pub DocumentationPanel(
     def handleSuggestionClick(suggestion: any) -> None {
         loading = True;
         error = "";
-
+        
         secureUrl = ensureHttpsUrl(suggestion.url);
-
+        
         selectedDoc = {
-            "content": "",
             "title": suggestion.title,
             "url": secureUrl
         };
-
+        
         setTimeout(lambda -> None {
             loading = False;
         }, 500);
@@ -77,8 +76,8 @@ def:pub DocumentationPanel(
         return None;
     }
 
-    # Icons
-    bookIcon = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+    # Icons (Lucide icon set)
+    bookIcon = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
     </svg>;
@@ -94,143 +93,310 @@ def:pub DocumentationPanel(
         <line x1="10" x2="21" y1="14" y2="3"></line>
     </svg>;
 
-    chevronRightIcon = <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted">
+    chevronRightIcon = <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m9 18 6-6-6-6"></path>
     </svg>;
 
-    loaderIcon = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+    closeIcon = <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" x2="6" y1="6" y2="18"></line>
+        <line x1="6" x2="18" y1="6" y2="18"></line>
+    </svg>;
+
+    loaderIcon = <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{"animation": "spin 1s linear infinite"}}>
         <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
     </svg>;
 
-    return <div className="w-1/2 border-l border-border bg-surface flex flex-col">
-        
-        <div className="flex items-center justify-between p-4 border-b border-border">
-            <div className="flex items-center gap-2">
-                {(
+    # Main container - full height and width
+    return <div style={{
+        "display": "flex",
+        "flexDirection": "column",
+        "height": "100%",
+        "width": "100%",
+        "backgroundColor": "#141414"
+    }}>
+        {(
+            <div style={{
+                "padding": "16px",
+                "borderBottom": "1px solid #374151",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "space-between"
+            }}>
+                <div style={{
+                    "display": "flex",
+                    "alignItems": "center",
+                    "gap": "8px"
+                }}>
+                    {bookIcon}
+                    <span style={{
+                        "fontSize": "18px",
+                        "fontWeight": "600",
+                        "color": "#ffffff"
+                    }}>
+                        {"Documentation"}
+                    </span>
+                </div>
+                <button
+                    onClick={onToggle}
+                    style={{
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "width": "32px",
+                        "height": "32px",
+                        "border": "none",
+                        "borderRadius": "6px",
+                        "backgroundColor": "transparent",
+                        "cursor": "pointer",
+                        "transition": "background-color 0.2s"
+                    }}
+                    onMouseEnter={lambda e: any -> None { e.target.style.backgroundColor = "#374151"; }}
+                    onMouseLeave={lambda e: any -> None { e.target.style.backgroundColor = "transparent"; }}
+                >
+                    {closeIcon}
+                </button>
+            </div>
+            if not selectedDoc and not loading and not error else None
+        )}
+
+        {(
+            <div style={{
+                "flex": "1",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center",
+                "flexDirection": "column",
+                "gap": "8px"
+            }}>
+                {loaderIcon}
+                <span style={{"color": "#9ca3af", "fontSize": "14px"}}>
+                    {"Loading documentation..."}
+                </span>
+            </div>
+            if loading else None
+        )}
+
+        {(
+            <div style={{
+                "flex": "1",
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "center"
+            }}>
+                <div style={{"textAlign": "center"}}>
+                    <p style={{"color": "#f87171", "marginBottom": "8px"}}>{error}</p>
+                    <button
+                        onClick={lambda -> None { error = ""; }}
+                        style={{
+                            "padding": "8px 16px",
+                            "border": "1px solid #374151",
+                            "borderRadius": "8px",
+                            "backgroundColor": "transparent",
+                            "color": "#9ca3af",
+                            "cursor": "pointer",
+                            "transition": "background-color 0.2s"
+                        }}
+                    >
+                        {"Try Again"}
+                    </button>
+                </div>
+            </div>
+            if error else None
+        )}
+
+        {(
+            <div style={{
+                "display": "flex",
+                "flexDirection": "column",
+                "height": "100%",
+                "flex": "1"
+            }}>
+                <div style={{
+                    "padding": "16px",
+                    "borderBottom": "1px solid #374151",
+                    "display": "flex",
+                    "alignItems": "center",
+                    "justifyContent": "space-between"
+                }}>
                     <button
                         onClick={handleBackToSuggestions}
-                        className="p-1 text-text-muted hover:text-text-primary mr-2 transition-colors"
+                        style={{
+                            "display": "flex",
+                            "alignItems": "center",
+                            "gap": "8px",
+                            "padding": "8px 16px",
+                            "border": "1px solid #374151",
+                            "borderRadius": "9999px",
+                            "backgroundColor": "transparent",
+                            "color": "#9ca3af",
+                            "cursor": "pointer",
+                            "fontSize": "14px",
+                            "transition": "all 0.2s"
+                        }}
                     >
                         {arrowLeftIcon}
+                        {"Back"}
                     </button>
-                    if selectedDoc else None
-                )}
-                {bookIcon}
-                <h2 className="text-lg font-semibold text-text-primary">
-                    {(selectedDoc.title if selectedDoc else "Documentation")}
-                </h2>
+                    <button
+                        onClick={lambda -> None { window.open(ensureHttpsUrl(selectedDoc.url), "_blank"); }}
+                        style={{
+                            "display": "flex",
+                            "alignItems": "center",
+                            "gap": "8px",
+                            "padding": "8px 16px",
+                            "border": "1px solid rgba(249, 115, 22, 0.2)",
+                            "borderRadius": "9999px",
+                            "backgroundColor": "rgba(249, 115, 22, 0.1)",
+                            "color": "#fb923c",
+                            "cursor": "pointer",
+                            "fontSize": "14px",
+                            "transition": "all 0.2s"
+                        }}
+                    >
+                        {externalLinkIcon}
+                        {"View Full Documentation"}
+                    </button>
+                </div>
+                
+                <div style={{
+                    "flex": "1",
+                    "minHeight": "0",
+                    "overflow": "hidden",
+                    "position": "relative"
+                }}>
+                    <iframe
+                        src={ensureHttpsUrl(selectedDoc.url)}
+                        title={selectedDoc.title}
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                        style={{
+                            "width": "100%",
+                            "height": "100%",
+                            "border": "none",
+                            "display": "block",
+                            "backgroundColor": "#ffffff"
+                        }}
+                    />
+                </div>
             </div>
-            <button
-                onClick={onToggle}
-                className="p-1 text-text-muted hover:text-text-primary text-xl transition-colors"
-            >
-                {"\u00D7"}
-            </button>
-        </div>
+            if selectedDoc and not loading and not error else None
+        )}
 
-        <div className="flex-1 flex">
-            
-            <div className="flex-1 flex flex-col">
-                
+        {(
+            <div style={{
+                "flex": "1",
+                "padding": "16px",
+                "overflowY": "auto"
+            }}>
                 {(
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="flex items-center gap-2 text-text-muted">
-                            {loaderIcon}
-                            {"Loading documentation..."}
-                        </div>
-                    </div>
-                    if loading else None
+                    <h3 style={{
+                        "fontSize": "18px",
+                        "fontWeight": "700",
+                        "color": "#ffffff",
+                        "marginBottom": "8px"
+                    }}>
+                        {"Relevant Documentation"}
+                    </h3>
+                    if suggestions.length > 0 else
+                    <h3 style={{
+                        "fontSize": "18px",
+                        "fontWeight": "700",
+                        "color": "#ffffff",
+                        "marginBottom": "8px"
+                    }}>
+                        {"Popular Topics"}
+                    </h3>
+                )}
+                {(
+                    <p style={{
+                        "color": "#9ca3af",
+                        "fontSize": "14px",
+                        "lineHeight": "1.5",
+                        "marginBottom": "16px"
+                    }}>
+                        {"Here are the most relevant documentation pages for your query:"}
+                    </p>
+                    if suggestions.length > 0 else
+                    <p style={{
+                        "color": "#9ca3af",
+                        "fontSize": "14px",
+                        "lineHeight": "1.5",
+                        "marginBottom": "16px"
+                    }}>
+                        {"Explore these popular Jac documentation topics:"}
+                    </p>
                 )}
 
-                
-                {(
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="text-error text-center">
-                            <p>{error}</p>
-                            <button
-                                onClick={lambda -> None { error = ""; }}
-                                className="mt-2 px-4 py-2 border border-border rounded-lg hover:bg-surface-hover transition-colors"
-                            >
-                                {"Try Again"}
-                            </button>
-                        </div>
-                    </div>
-                    if error else None
-                )}
-
-                
-                {(
-                    <>
-                        <div className="p-4 border-b border-border">
-                            <div className="flex items-center justify-end">
-                                <button
-                                    onClick={lambda -> None { window.open(ensureHttpsUrl(selectedDoc.url), "_blank"); }}
-                                    className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface-hover transition-colors text-sm"
-                                >
-                                    {externalLinkIcon}
-                                    {"View Full Documentation"}
-                                </button>
+                <div style={{"display": "flex", "flexDirection": "column", "gap": "12px"}}>
+                    {currentSuggestions.map(lambda suggestion: any, index: int -> any {
+                        return <div
+                            key={index}
+                            onClick={lambda -> None { handleSuggestionClick(suggestion); }}
+                            style={{
+                                "padding": "16px",
+                                "background": "linear-gradient(to bottom right, #1e1e1e, #252525)",
+                                "border": "1px solid #374151",
+                                "borderRadius": "12px",
+                                "cursor": "pointer",
+                                "transition": "all 0.3s"
+                            }}
+                        >
+                            <div style={{
+                                "display": "flex",
+                                "alignItems": "flex-start",
+                                "justifyContent": "space-between"
+                            }}>
+                                <div style={{"flex": "1"}}>
+                                    <h4 style={{
+                                        "fontWeight": "600",
+                                        "color": "#ffffff",
+                                        "marginBottom": "8px",
+                                        "fontSize": "16px",
+                                        "display": "flex",
+                                        "alignItems": "center",
+                                        "gap": "8px"
+                                    }}>
+                                        <span style={{"fontSize": "inherit", "display": "flex", "alignItems": "center"}}>
+                                            {suggestion.title.split("●").map(lambda part: str, i: int -> any {
+                                                if i == 0 {
+                                                    return part;
+                                                }
+                                                return <span key={i} style={{"display": "flex", "alignItems": "center"}}>
+                                                    <span style={{"fontSize": "8px", "margin": "0 4px", "verticalAlign": "middle", "color": "#d97706"}}>{"●"}</span>
+                                                    {part}
+                                                </span>;
+                                            })}
+                                        </span>
+                                        {chevronRightIcon}
+                                    </h4>
+                                    {(
+                                        <p style={{
+                                            "fontSize": "14px",
+                                            "color": "#9ca3af",
+                                            "marginBottom": "8px",
+                                            "lineHeight": "1.5"
+                                        }}>
+                                            {suggestion.reason}
+                                        </p>
+                                        if suggestion.reason else None
+                                    )}
+                                    <p style={{
+                                        "fontSize": "11px",
+                                        "color": "#60a5fa",
+                                        "fontFamily": "monospace",
+                                        "transition": "color 0.2s"
+                                    }}
+                                    onMouseEnter={lambda e: any -> None { e.target.style.color = "#93c5fd"; }}
+                                    onMouseLeave={lambda e: any -> None { e.target.style.color = "#60a5fa"; }}
+                                    >
+                                        {ensureHttpsUrl(suggestion.url)}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-
-                        <div className="flex-1 relative">
-                            <iframe
-                                src={ensureHttpsUrl(selectedDoc.url)}
-                                className="w-full h-full border-0"
-                                title={selectedDoc.title}
-                                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                                style={{"background": "white", "minHeight": "100%"}}
-                            />
-                        </div>
-                    </>
-                    if selectedDoc and not loading and not error else None
-                )}
-
-                
-                {(
-                    <div className="flex-1 p-4 overflow-y-auto">
-                        <div className="mb-4">
-                            <h3 className="text-lg font-semibold text-text-primary mb-2">
-                                {("Relevant Documentation" if suggestions.length > 0 else "Popular Topics")}
-                            </h3>
-                            <p className="text-text-muted text-sm mb-4">
-                                {(
-                                    "Here are the most relevant documentation pages for your query:"
-                                    if suggestions.length > 0
-                                    else "Explore these popular Jac documentation topics:"
-                                )}
-                            </p>
-                        </div>
-
-                        <div className="space-y-3">
-                            {currentSuggestions.map(lambda suggestion: any, index: int -> any {
-                                return <div
-                                    key={index}
-                                    className="p-4 bg-surface-hover border border-border rounded-lg cursor-pointer hover:bg-border transition-colors"
-                                    onClick={lambda -> None { handleSuggestionClick(suggestion); }}
-                                    title={"Click to view " + suggestion.title}
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-text-primary mb-2 flex items-center gap-2">
-                                                {suggestion.title}
-                                                {chevronRightIcon}
-                                            </h4>
-                                            <p className="text-sm text-text-muted mb-2">
-                                                {suggestion.reason}
-                                            </p>
-                                            <p className="text-xs text-secondary hover:text-secondary-hover">
-                                                {ensureHttpsUrl(suggestion.url)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>;
-                            })}
-                        </div>
-                    </div>
-                    if not selectedDoc and not loading and not error else None
-                )}
+                        </div>;
+                    })}
+                </div>
             </div>
-        </div>
+            if not selectedDoc and not loading and not error else None
+        )}
     </div>;
 }
