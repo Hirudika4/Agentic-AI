@@ -107,7 +107,24 @@ def:pub useChat() -> any {
                 userEmail = getUsernameFromToken();
             }
 
-            result = await sendMessage(content.trim(), sessionId, userEmail);
+            # Start both requests in parallel
+            messagePromise = sendMessage(content.trim(), sessionId, userEmail);
+            
+            # Handle suggestions independently (fire and forget - displays whenever ready)
+            async def handleSuggestions() -> None {
+                try {
+                    suggestResult = await getSuggestions(content.trim(), []);
+                    if suggestResult.success and suggestResult.suggestions {
+                        docSuggestions = suggestResult.suggestions;
+                    }
+                } except Exception as e {
+                    console.error("Error fetching suggestions:", e);
+                }
+            }
+            handleSuggestions();
+
+            # Wait for and display message response
+            result = await messagePromise;
 
             if result.success {
                 # Create bot message
@@ -121,9 +138,6 @@ def:pub useChat() -> any {
 
                 # Update session title if first message
                 updateSessionTitle(content.trim());
-
-                # Get documentation suggestions
-                fetchDocSuggestions(content.trim());
             } else {
                 # Error message
                 errorMessage = {
