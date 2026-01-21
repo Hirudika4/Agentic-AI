@@ -51,12 +51,15 @@ def extract_nav_items(nav_item: Any, parent_sections: List[str], base_url: str, 
             # Key is the section title
             if isinstance(value, str) {
                 # This is a direct link: "Title": "path/to/file.md"
-                title = " ● ".join(parent_sections + [key]) if parent_sections else key;
-                url = construct_url(site_url, value);
-                results.append({
-                    "title": title,
-                    "url": url
-                });
+                # Only process .md files
+                if value.endswith('.md') {
+                    title = " ● ".join(parent_sections + [key]) if parent_sections else key;
+                    url = construct_url(site_url, value);
+                    results.append({
+                        "title": title,
+                        "url": url
+                    });
+                }
             } elif isinstance(value, list) {
                 # This is a section with nested items
                 new_parent_sections = parent_sections + [key];
@@ -75,12 +78,15 @@ def extract_nav_items(nav_item: Any, parent_sections: List[str], base_url: str, 
         }
     } elif isinstance(nav_item, str) {
         # Direct path without title
-        title = " ● ".join(parent_sections) if parent_sections else nav_item;
-        url = construct_url(site_url, nav_item);
-        results.append({
-            "title": title,
-            "url": url
-        });
+        # Only process .md files
+        if nav_item.endswith('.md') {
+            title = " ● ".join(parent_sections) if parent_sections else nav_item;
+            url = construct_url(site_url, nav_item);
+            results.append({
+                "title": title,
+                "url": url
+            });
+        }
     }
     
     return results;
