@@ -7,7 +7,6 @@ entry-point = "main.jac"
 [dependencies]
 python-dotenv = ">=0.0.0"
 requests = ">=0.0.0"
-byllm = ">=0.0.0"
 pymongo = ">=0.0.0"
 langchain-openai = ">=0.0.0"
 langchain-community = ">=0.0.0"
@@ -46,3 +45,13 @@ base_route_app = "app"
 [plugins.scale.kubernetes]
 app_name = "jac-gpt-test"
 namespace = "jac-gpt-test"
+
+
+[jacpack]
+name = "jac-gpt-client"
+description = "A full-stack Jac application with GPT integration, RAG capabilities, and Mantine UI"
+jaclang = "0.9.9"
+
+[jacpack.options]
+gitignore_entries = ["*"]
+root_gitignore_entries = [".jac/", "node_modules/", "dist/", ".env"]
