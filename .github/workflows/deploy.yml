@@ -64,6 +64,22 @@ jobs:
           jac start main.jac --scale
         working-directory: jac-gpt-fullstack
 
+      # Create API keys secret (recreated each deploy, survives jac destroy)
+      - name: Create API keys secret
+        run: |
+          kubectl delete secret jac-gpt-api-keys -n jac-gpt-test2 --ignore-not-found=true
+          kubectl create secret generic jac-gpt-api-keys \
+            --namespace=jac-gpt-test2 \
+            --from-literal=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+
+      # Inject secret into deployment
+      - name: Inject API keys into deployment
+        run: |
+          kubectl patch deployment jac-gpt-test2 -n jac-gpt-test2 --type='json' \
+            -p='[{"op": "add", "path": "/spec/template/spec/containers/0/envFrom", "value": [{"secretRef": {"name": "jac-gpt-api-keys"}}]}]'
+          echo "Waiting for rollout..."
+          kubectl rollout status deployment/jac-gpt-test2 -n jac-gpt-test2 --timeout=300s
+
       # Get deployment status
       - name: Verify deployment
         run: |
