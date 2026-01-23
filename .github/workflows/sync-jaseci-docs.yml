@@ -4,51 +4,69 @@ on:
   # Run every Monday at 00:00 UTC
   schedule:
     - cron: '0 0 * * 1'
-  
+
   # Allow manual triggering
   workflow_dispatch:
 
 jobs:
   sync-docs:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Agentic-AI repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-      
+
       - name: Configure Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-      
+
       - name: Create sync branch
         run: |
           BRANCH_NAME="sync-jaseci-docs-$(date +%Y%m%d-%H%M%S)"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
           git checkout -b $BRANCH_NAME
-      
+
       - name: Clone jaseci repository
         run: |
-          git clone --depth 1 https://github.com/jaseci-labs/jaseci.git /tmp/jaseci
-      
+          # Clone to Agentic-AI/jaseci/ for generate_doc_links.jac to find mkdocs.yml
+          git clone --depth 1 https://github.com/jaseci-labs/jaseci.git jaseci
+
       - name: Remove old docs and copy new docs
         run: |
-          # Remove old docs directory
-          rm -rf jac-gpt/server/docs
-          
-          # Copy new docs directory
-          cp -r /tmp/jaseci/docs/docs jac-gpt/server/docs
-          
-          echo "Docs synced successfully"
-      
+          # Remove old docs directory in jac-gpt-fullstack
+          rm -rf jac-gpt-fullstack/services/docs
+
+          # Copy new docs directory (the actual markdown files)
+          cp -r jaseci/docs/docs jac-gpt-fullstack/services/docs
+
+          echo "Docs synced to jac-gpt-fullstack/services/docs"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies for doc link generation
+        run: |
+          pip install --upgrade pip
+          pip install jaclang sentence-transformers numpy pyyaml
+
+      - name: Generate documentation links with embeddings
+        run: |
+          cd jac-gpt-fullstack
+          jac run services/generate_doc_links.jac
+          echo "Generated all_section_links.json with embeddings"
+
       - name: Check for changes
         id: check_changes
         run: |
-          git add jac-gpt/server/docs
-          
+          git add jac-gpt-fullstack/services/docs
+          git add jac-gpt-fullstack/services/docs_links
+
           if git diff --staged --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes detected"
@@ -56,20 +74,22 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changes detected"
           fi
-      
+
       - name: Commit changes
         if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           git commit -m "chore: sync docs from jaseci-labs/jaseci
 
           Automated sync of documentation from jaseci-labs/jaseci repository.
+          - Updated jac-gpt-fullstack/services/docs with latest markdown files
+          - Regenerated all_section_links.json with semantic embeddings
           Updated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-      
+
       - name: Push changes
         if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           git push origin $BRANCH_NAME
-      
+
       - name: Create Pull Request
         if: steps.check_changes.outputs.has_changes == 'true'
         env:
@@ -80,27 +100,29 @@ jobs:
             --body "## Automated Documentation Sync
 
           This PR updates the Jaseci documentation from the [jaseci-labs/jaseci](https://github.com/jaseci-labs/jaseci) repository.
-          
+
           ### Changes
-          - Updated \`jac-gpt/server/docs/\` directory with the latest documentation
-          
+          - Updated \`jac-gpt-fullstack/services/docs/\` with latest markdown files
+          - Regenerated \`jac-gpt-fullstack/services/docs_links/all_section_links.json\` with semantic embeddings
+
           ### Source
           - Repository: \`jaseci-labs/jaseci\`
           - Path: \`docs/docs/\`
           - Sync Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          
+
           ### Review Checklist
           - [x] Documentation synced from upstream
+          - [x] Doc links regenerated with embeddings
           - [x] Automated merge enabled
-          
+
           ---
           *This PR was automatically created and will be auto-merged by the [Sync Jaseci Docs workflow](.github/workflows/sync-jaseci-docs.yml)*" \
             --head $BRANCH_NAME \
             --base main)
-          
+
           echo "PR_URL=$PR_URL" >> $GITHUB_ENV
           echo "Created PR: $PR_URL"
-      
+
       - name: Merge Pull Request
         if: steps.check_changes.outputs.has_changes == 'true'
         env:
@@ -109,7 +131,7 @@ jobs:
           # Merge the PR immediately
           gh pr merge $PR_URL --squash --delete-branch
           echo "✅ PR merged successfully and branch deleted"
-      
+
       - name: No changes summary
         if: steps.check_changes.outputs.has_changes == 'false'
         run: |
