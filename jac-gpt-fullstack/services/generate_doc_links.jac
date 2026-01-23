@@ -13,15 +13,18 @@ import numpy as np;
 import from sentence_transformers {SentenceTransformer}
 
 
-# Custom YAML loader that ignores MkDocs-specific tags like !python/name:...
-class SafeLoaderIgnoreUnknown(yaml.SafeLoader) {}
+# Create custom YAML loader that ignores MkDocs-specific tags like !python/name:...
+def get_yaml_loader() -> Any {
+    loader = yaml.SafeLoader;
 
-# Add a constructor that ignores unknown tags and returns None
-def ignore_unknown(loader: Any, tag_suffix: str, node: Any) -> Any {
-    return None;
+    # Add constructor that ignores unknown tags
+    def ignore_unknown(ldr: Any, tag_suffix: str, node: Any) -> Any {
+        return None;
+    }
+
+    loader.add_multi_constructor('', ignore_unknown);
+    return loader;
 }
-
-SafeLoaderIgnoreUnknown.add_multi_constructor('', ignore_unknown);
 
 
 """Convert markdown file path to URL following mkdocs use_directory_urls convention."""
@@ -116,7 +119,7 @@ def parse_mkdocs_nav(mkdocs_path: str, output_path: str) {
     
     # Read mkdocs.yml (using custom loader to ignore MkDocs-specific tags)
     with open(mkdocs_path, 'r', encoding='utf-8') as f {
-        mkdocs_config = yaml.load(f, Loader=SafeLoaderIgnoreUnknown);
+        mkdocs_config = yaml.load(f, Loader=get_yaml_loader());
     }
     
     # Extract site_url and nav
