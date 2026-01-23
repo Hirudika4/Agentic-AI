@@ -91,7 +91,7 @@ def:pub useChat() -> any {
             "timestamp": Date()
         };
 
-        messages = messages.concat([userMessage]);
+        messages = lambda prev: any -> any { return prev.concat([userMessage]); };
         lastUserMessage = content.trim();
         isLoading = True;
 
@@ -134,7 +134,7 @@ def:pub useChat() -> any {
                     "isUser": False,
                     "timestamp": Date()
                 };
-                messages = messages.concat([botMessage]);
+                messages = lambda prev: any -> any { return prev.concat([botMessage]); };
 
                 # Update session title if first message
                 updateSessionTitle(content.trim());
@@ -146,7 +146,7 @@ def:pub useChat() -> any {
                     "isUser": False,
                     "timestamp": Date()
                 };
-                messages = messages.concat([errorMessage]);
+                messages = lambda prev: any -> any { return prev.concat([errorMessage]); };
             }
         } except Exception as e {
             console.error("Send message error:", e);
@@ -156,7 +156,7 @@ def:pub useChat() -> any {
                 "isUser": False,
                 "timestamp": Date()
             };
-            messages = messages.concat([errorMessage]);
+            messages = lambda prev: any -> any { return prev.concat([errorMessage]); };
         } finally {
             isLoading = False;
         }
@@ -183,25 +183,25 @@ def:pub useChat() -> any {
             }
 
             # Check if session exists
-            existingIndex = -1;
-            for i in range(chatSessions.length) {
-                if chatSessions[i].id == sessionId {
-                    existingIndex = i;
-                    break;
-                }
-            }
+            existingIndex = chatSessions.findIndex(lambda s: any -> bool { return s.id == sessionId; });
 
             if existingIndex >= 0 {
                 # Update existing session
-                chatSessions[existingIndex].title = title;
+                updatedSessions = chatSessions.map(lambda s: any, idx: int -> any {
+                    if idx == existingIndex {
+                        return {"id": s.id, "title": title, "createdAt": s.createdAt};
+                    }
+                    return s;
+                });
+                chatSessions = lambda prev: any -> any { return updatedSessions; };
             } else {
                 # Add new session
                 newSession = {
                     "id": sessionId,
                     "title": title,
-                    "createdAt": Date().toISOString()
+                    "createdAt": String(Date.now())
                 };
-                chatSessions = [newSession].concat(chatSessions);
+                chatSessions = lambda prev: any -> any { return [newSession].concat(prev); };
             }
 
             # Save to localStorage
@@ -233,7 +233,7 @@ def:pub useChat() -> any {
                     };
                     newMessages.push(msg);
                 }
-                messages = newMessages;
+                messages = lambda prev: any -> any { return newMessages; };
             }
         } except Exception as e {
             console.error("Error loading session:", e);
