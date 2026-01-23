@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy-jac-gpt-fullstack:
-    if: startsWith(github.ref, 'refs/tags/jac-gpt-fullstack-') || startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/jac-gpt-') || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     permissions:
@@ -68,9 +68,9 @@ jobs:
       - name: Verify deployment
         run: |
           echo "Checking deployment status..."
-          kubectl get deployments -n jac-gpt-test
-          kubectl get services -n jac-gpt-test
-          kubectl get pods -n jac-gpt-test
+          kubectl get deployments -n jac-gpt-test2
+          kubectl get services -n jac-gpt-test2
+          kubectl get pods -n jac-gpt-test2
 
       # Output deployment summary
       - name: Deployment Summary
@@ -78,8 +78,8 @@ jobs:
         run: |
           echo "## JAC-GPT Fullstack Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration" >> $GITHUB_STEP_SUMMARY
-          echo "- **App Name**: jac-gpt-test" >> $GITHUB_STEP_SUMMARY
-          echo "- **Namespace**: jac-gpt-test" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Name**: jac-gpt-test2" >> $GITHUB_STEP_SUMMARY
+          echo "- **Namespace**: jac-gpt-test2" >> $GITHUB_STEP_SUMMARY
           echo "- **Cluster**: jaseci-cluster" >> $GITHUB_STEP_SUMMARY
           echo "- **Region**: us-east-2" >> $GITHUB_STEP_SUMMARY
           echo "- **Triggered By**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
@@ -89,5 +89,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Deployment Status" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          kubectl get all -n jac-gpt-test 2>&1 >> $GITHUB_STEP_SUMMARY || echo "Unable to fetch deployment status" >> $GITHUB_STEP_SUMMARY
+          kubectl get all -n jac-gpt-test2 2>&1 >> $GITHUB_STEP_SUMMARY || echo "Unable to fetch deployment status" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
