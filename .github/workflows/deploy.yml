@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deploy-jac-gpt-fullstack:
-    if: startsWith(github.ref, 'refs/tags/jac-gpt-') || startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/jac-gpt-') || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
 
     permissions:
@@ -67,26 +67,26 @@ jobs:
       # Create API keys secret (recreated each deploy, survives jac destroy)
       - name: Create API keys secret
         run: |
-          kubectl delete secret jac-gpt-api-keys -n jac-gpt-test2 --ignore-not-found=true
+          kubectl delete secret jac-gpt-api-keys -n jac-gpt-test --ignore-not-found=true
           kubectl create secret generic jac-gpt-api-keys \
-            --namespace=jac-gpt-test2 \
+            --namespace=jac-gpt-test \
             --from-literal=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
 
       # Inject secret into deployment
       - name: Inject API keys into deployment
         run: |
-          kubectl patch deployment jac-gpt-test2 -n jac-gpt-test2 --type='json' \
+          kubectl patch deployment jac-gpt-test -n jac-gpt-test --type='json' \
             -p='[{"op": "add", "path": "/spec/template/spec/containers/0/envFrom", "value": [{"secretRef": {"name": "jac-gpt-api-keys"}}]}]'
           echo "Waiting for rollout..."
-          kubectl rollout status deployment/jac-gpt-test2 -n jac-gpt-test2 --timeout=300s
+          kubectl rollout status deployment/jac-gpt-test -n jac-gpt-test --timeout=300s
 
       # Get deployment status
       - name: Verify deployment
         run: |
           echo "Checking deployment status..."
-          kubectl get deployments -n jac-gpt-test2
-          kubectl get services -n jac-gpt-test2
-          kubectl get pods -n jac-gpt-test2
+          kubectl get deployments -n jac-gpt-test
+          kubectl get services -n jac-gpt-test
+          kubectl get pods -n jac-gpt-test
 
       # Output deployment summary
       - name: Deployment Summary
@@ -94,8 +94,8 @@ jobs:
         run: |
           echo "## JAC-GPT Fullstack Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "### Configuration" >> $GITHUB_STEP_SUMMARY
-          echo "- **App Name**: jac-gpt-test2" >> $GITHUB_STEP_SUMMARY
-          echo "- **Namespace**: jac-gpt-test2" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Name**: jac-gpt-test" >> $GITHUB_STEP_SUMMARY
+          echo "- **Namespace**: jac-gpt-test" >> $GITHUB_STEP_SUMMARY
           echo "- **Cluster**: jaseci-cluster" >> $GITHUB_STEP_SUMMARY
           echo "- **Region**: us-east-2" >> $GITHUB_STEP_SUMMARY
           echo "- **Triggered By**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
@@ -105,5 +105,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Deployment Status" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          kubectl get all -n jac-gpt-test2 2>&1 >> $GITHUB_STEP_SUMMARY || echo "Unable to fetch deployment status" >> $GITHUB_STEP_SUMMARY
+          kubectl get all -n jac-gpt-test 2>&1 >> $GITHUB_STEP_SUMMARY || echo "Unable to fetch deployment status" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
