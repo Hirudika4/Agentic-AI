@@ -1,24 +1,16 @@
-"""Chat input component with send button using Mantine UI (Jaseci orange theme)."""
+"""Chat input component with pill-shaped design (following specification)."""
 
 import from react { useRef, useEffect }
-import from "@mantine/core" {
-    Box,
-    Group,
-    Textarea,
-    ActionIcon,
-    Paper,
-    Tooltip
-}
 import from "@tabler/icons-react" {
     IconSend,
     IconPlayerStop
 }
 
-"""Chat input with auto-expanding textarea."""
+"""Chat input with auto-expanding textarea and integrated button."""
 def:pub ChatInput(
     onSendMessage: any,
     disabled: bool = False,
-    placeholder: str = "Ask me anything about Jac...",
+    placeholder: str = "Ask about Jac syntax, functions, loops, classes, or request code examples...",
     isLoading: bool = False,
     onStop: any = None
 ) -> any {
@@ -26,19 +18,12 @@ def:pub ChatInput(
     has isFocused: bool = False;
     textareaRef = useRef(None);
 
-    # Theme tokens (must stay INSIDE function)
-    BG = "#141414";
-    TOPBAR_BG = "rgba(20,20,20,0.95)";
-    BORDER = "#374151";
-    TEXT = "#ffffff";
-    MUTED = "#9ca3af";
-    ORANGE = "#f97316";
-
-    # Auto-resize textarea
+    # Auto-resize textarea (60px min, 200px max)
     useEffect(lambda -> None {
         if textareaRef.current {
             textareaRef.current.style.height = "auto";
-            newHeight = Math.min(textareaRef.current.scrollHeight, 200);
+            scrollHeight = textareaRef.current.scrollHeight;
+            newHeight = Math.max(60, Math.min(scrollHeight, 200));
             textareaRef.current.style.height = String(newHeight) + "px";
         }
     }, [inputValue]);
@@ -49,7 +34,7 @@ def:pub ChatInput(
             onSendMessage(inputValue.trim());
             inputValue = "";
             if textareaRef.current {
-                textareaRef.current.style.height = "auto";
+                textareaRef.current.style.height = "60px";
             }
         }
     }
@@ -67,107 +52,128 @@ def:pub ChatInput(
 
     canSend = inputValue.trim() and not disabled and not isLoading;
 
-    stopButton = <Tooltip label="Stop generating" position="top">
-        <ActionIcon
-            onClick={onStop}
-            variant="filled"
-            size={52}
-            radius="xl"
-            styles={{
-                "root": {
-                    "background": "rgba(239, 68, 68, 0.95)",
-                    "border": "1px solid rgba(239, 68, 68, 0.35)",
-                    "boxShadow": "0 6px 18px rgba(239, 68, 68, 0.18)",
-                    "alignSelf": "center"
-                }
-            }}
-        >
-            <IconPlayerStop size={20} />
-        </ActionIcon>
-    </Tooltip>;
+    # Border color based on state (exact specification)
+    borderColor = "rgba(55, 65, 81, 0.5)";  # gray-700 @ 50% (default)
+    boxShadowValue = "none";
+    
+    if isFocused {
+        borderColor = "#f97316";  # orange-500 full (focus)
+        boxShadowValue = "0 0 0 2px rgba(249, 115, 22, 0.2)";  # 2px ring @ 20%
+    }
 
-    sendButton = <Tooltip label="Send message" position="top" disabled={not canSend}>
-        <ActionIcon
-            onClick={handleSubmit}
-            disabled={not canSend}
-            variant="filled"
-            size={52}
-            radius="xl"
-            styles={{
-                "root": {
-                    "background": (ORANGE if canSend else "rgba(255,255,255,0.08)"),
-                    "color": (TEXT if canSend else MUTED),
-                    "border": (("1px solid rgba(249,115,22,0.45)" if canSend else "1px solid rgba(255,255,255,0.10)")),
-                    "boxShadow": (("0 10px 26px rgba(249,115,22,0.22)" if canSend else "none")),
-                    "transition": "all 0.2s ease",
-                    "alignSelf": "center"
-                }
-            }}
-        >
-            <IconSend size={20} />
-        </ActionIcon>
-    </Tooltip>;
+    # Button icon and styles
+    buttonBg = "linear-gradient(135deg, #f97316 0%, #ea580c 100%)";  # gradient-primary
+    buttonShadow = "none";
+    buttonIcon = <IconSend size={16} />;
+    buttonOpacity = "1";
+    
+    if isLoading {
+        buttonBg = "#374151";  # gray-700
+        buttonShadow = "none";
+        buttonIcon = <IconPlayerStop size={16} />;
+    } elif not canSend {
+        buttonBg = "linear-gradient(135deg, #f97316 0%, #ea580c 100%)";
+        buttonShadow = "none";
+        buttonOpacity = "0.5";  # 50% opacity for disabled
+    }
 
-    return <Paper
-        p="md"
-        radius={0}
-        style={{
-            "borderTop": "1px solid " + BORDER,
-            "background": TOPBAR_BG,
-            "backdropFilter": "blur(10px)"
-        }}
-    >
-        <Box maw={980} mx="auto">
-            <form onSubmit={handleSubmit}>
-                <Group
-                    gap="md"
-                    align="center"
-                    wrap="nowrap"
+    return <div style={{
+        "paddingTop": "8px",
+        "paddingLeft": "12px",
+        "paddingRight": "12px",
+        "paddingBottom": "16px"
+    }}>
+        <form onSubmit={handleSubmit} style={{
+            "maxWidth": "768px",
+            "margin": "0 auto"
+        }}>
+            <div style={{
+                "position": "relative"
+            }}>
+                <textarea
+                    ref={textareaRef}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={lambda -> None { isFocused = True; }}
+                    onBlur={lambda -> None { isFocused = False; }}
+                    placeholder={placeholder}
+                    disabled={disabled and not isLoading}
                     style={{
-                        "alignItems": "center"
+                        "width": "100%",
+                        "minHeight": "60px",
+                        "maxHeight": "200px",
+                        "borderRadius": "30px",
+                        "padding": "16px 64px 16px 20px",
+                        "fontSize": "16px",
+                        "lineHeight": "1.625",
+                        "background": "#09090b",
+                        "border": "1px solid " + borderColor,
+                        "color": "#fafafa",
+                        "resize": "none",
+                        "outline": "none",
+                        "transition": "all 300ms ease",
+                        "fontFamily": "system-ui, -apple-system, sans-serif",
+                        "boxShadow": boxShadowValue,
+                        "overflow": "auto"
+                    }}
+                    onMouseEnter={lambda e: any -> None {
+                        if not isFocused {
+                            e.currentTarget.style.borderColor = "rgba(249, 115, 22, 0.5)";
+                        }
+                    }}
+                    onMouseLeave={lambda e: any -> None {
+                        if not isFocused {
+                            e.currentTarget.style.borderColor = "rgba(55, 65, 81, 0.5)";
+                        }
+                    }}
+                />
+                
+                <button
+                    type={(("button" if isLoading else "submit"))}
+                    onClick={(onStop if isLoading else None)}
+                    disabled={not canSend and not isLoading}
+                    style={{
+                        "position": "absolute",
+                        "right": "12px",
+                        "bottom": "50%",
+                        "transform": "translateY(50%)",
+                        "width": "40px",
+                        "height": "40px",
+                        "borderRadius": "50%",
+                        "border": "none",
+                        "background": buttonBg,
+                        "color": "#ffffff",
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "cursor": ((("pointer" if canSend or isLoading else "not-allowed"))),
+                        "transition": "all 300ms ease",
+                        "boxShadow": buttonShadow,
+                        "opacity": buttonOpacity,
+                        "padding": "0"
+                    }}
+                    onMouseEnter={lambda e: any -> None {
+                        if canSend or isLoading {
+                            e.currentTarget.style.transform = "translateY(50%) scale(1.05)";
+                            # Orange glow shadow on hover
+                            e.currentTarget.style.boxShadow = "0 0 20px rgba(249, 115, 22, 0.5), 0 0 40px rgba(249, 115, 22, 0.2)";
+                            if isLoading {
+                                e.currentTarget.style.background = "#4b5563";  # gray-600 on hover
+                            }
+                        }
+                    }}
+                    onMouseLeave={lambda e: any -> None {
+                        e.currentTarget.style.transform = "translateY(50%) scale(1)";
+                        e.currentTarget.style.boxShadow = "none";
+                        if isLoading {
+                            e.currentTarget.style.background = "#374151";  # gray-700 default
+                        }
                     }}
                 >
-                    <Box style={{"flex": "1", "minWidth": "0"}}>
-                        <Textarea
-                            ref={textareaRef}
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            onKeyDown={handleKeyDown}
-                            placeholder={placeholder}
-                            disabled={disabled or isLoading}
-                            autosize
-                            minRows={1}
-                            maxRows={6}
-                            radius="xl"
-                            size="md"
-                            onFocus={lambda -> None { isFocused = True; }}
-                            onBlur={lambda -> None { isFocused = False; }}
-                            styles={{
-                                "input": {
-                                    "background": "rgba(17,17,17,0.90)",
-                                    "border": (("1px solid rgba(249,115,22,0.60)" if isFocused else "1px solid rgba(255,255,255,0.10)")),
-                                    "color": TEXT,
-                                    "fontSize": "15px",
-                                    "padding": "14px 18px",
-                                    "boxShadow": (("0 0 0 3px rgba(249,115,22,0.14)" if isFocused else "0 10px 35px rgba(0,0,0,0.35)")),
-                                    "transition": "all 0.18s ease",
-                                    "lineHeight": "1.5"
-                                }
-                            }}
-                        />
-                    </Box>
-
-                    <Box style={{"flexShrink": "0", "display": "flex", "alignItems": "center"}}>
-                        {(stopButton if isLoading and onStop else sendButton)}
-                    </Box>
-                </Group>
-            </form>
-
-            <Box mt="xs" ta="center">
-                <span style={{"fontSize": "11px", "color": "rgba(255,255,255,0.35)"}}>
-                    {"Press Enter to send, Shift+Enter for new line"}
-                </span>
-            </Box>
-        </Box>
-    </Paper>;
+                    {buttonIcon}
+                </button>
+            </div>
+        </form>
+    </div>;
 }
