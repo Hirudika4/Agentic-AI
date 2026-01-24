@@ -254,6 +254,7 @@ def:pub useChat() -> any {
 
     def handleStopGeneration() -> None {
         isLoading = False;
+
     }
 
     return {

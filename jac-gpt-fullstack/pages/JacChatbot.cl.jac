@@ -1,45 +1,56 @@
-# Main chatbot page component with Mantine UI (Jaseci theme + logo)
+# Main chatbot page component following complete specification
 
-import from react { useState }
+import from react { useState, useRef, useEffect }
 import from "@jac-client/utils" { jacIsLoggedIn }
-import from "@mantine/core" {
-    Box,
-    Group,
-    Text,
-    Paper,
-    ScrollArea,
-    Badge,
-    Loader,
-    Button,
-    Stack,
-    Burger
-}
-import from "@tabler/icons-react" { IconBook, IconSparkles, IconMessageCircle, IconX }
+import from "@mantine/core" { ScrollArea }
+import from "@tabler/icons-react" { IconBook, IconX, IconMenu2 }
 import from ..hooks.useChat { useChat }
 import from ..components.ChatMessage { ChatMessage }
 import from ..components.ChatInput { ChatInput }
 import from ..components.Sidebar { Sidebar }
 import from ..components.DocumentationPanel { DocumentationPanel }
 
-# Main Jac GPT Chatbot component (Jaseci theme)
+# Main Jac GPT Chatbot component (Complete Specification)
 def:pub JacChatbot() -> any {
     has sidebarOpen: bool = False;
     has docPanelOpen: bool = False;
 
-    # --- Theme tokens (keep INSIDE component to avoid build errors) ---
-    BG = "#0f0f10";                  # main background
-    TOPBAR_BG = "rgba(20,20,20,0.92)";
+    # Color scheme from specification
+    BG = "#141414";                  # main background
     BORDER = "#374151";              # gray-700
     TEXT = "#ffffff";
-    MUTED = "#9ca3af";
-    MUTED2 = "#6b7280";
-    PANEL = "rgba(255,255,255,0.04)";
-    PANEL_BORDER = "rgba(255,255,255,0.08)";
-    ORANGE = "#f97316";
-    ORANGE_DARK = "#ea580c";
+    TEXT_SECONDARY = "#d1d5db";      # gray-300
+    MUTED = "#9ca3af";               # gray-400
+    ORANGE = "#f97316";              # primary accent
 
     chat = useChat();
     isAuthenticated = jacIsLoggedIn();
+    scrollAreaRef = useRef(None);
+
+    # Add CSS animations on mount
+    useEffect(lambda -> None {
+        # Add keyframes for animations if not already present
+        styleId = "chat-animations";
+        if not document.getElementById(styleId) {
+            style = document.createElement("style");
+            style.id = styleId;
+            style.textContent = """
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes dotBounce {
+                    0%, 60%, 100% { 
+                        transform: translateY(0);
+                    }
+                    30% { 
+                        transform: translateY(-4px);
+                    }
+                }
+            """;
+            document.head.appendChild(style);
+        }
+    }, []);
 
     def toggleSidebar() -> None {
         sidebarOpen = not sidebarOpen;
@@ -52,92 +63,188 @@ def:pub JacChatbot() -> any {
     # Build message items
     messageItems = [];
     for msg in chat.messages {
-        messageItems.push(<ChatMessage
-            key={msg.id}
-            message={msg.content}
-            isUser={msg.isUser}
-            timestamp={msg.timestamp}
-        />);
+        messageItems.push(<div key={msg.id} style={{"animation": "fadeIn 0.3s ease"}}>
+            <ChatMessage
+                message={msg.content}
+                isUser={msg.isUser}
+                timestamp={msg.timestamp}
+            />
+        </div>);
     }
 
-    # Loading indicator
-    loadingIndicator = <Group gap="sm" py="md" px="xs">
-        <Box style={{
-            "width": "32px",
-            "height": "32px",
-            "borderRadius": "10px",
-            "background": "rgba(249,115,22,0.12)",
-            "border": "1px solid rgba(249,115,22,0.35)",
+    # Loading indicator with bouncing dots (sequential bounce)
+    loadingIndicator = <div style={{
+        "paddingTop": "16px",
+        "paddingBottom": "16px",
+        "paddingLeft": "8px",
+        "paddingRight": "8px",
+        "animation": "fadeIn 0.3s ease"
+    }}>
+        <div style={{
             "display": "flex",
             "alignItems": "center",
-            "justifyContent": "center"
+            "gap": "8px"
         }}>
-            <img
-                src="/logo.png"
-                style={{
-                    "width": "20px",
-                    "height": "20px",
-                    "objectFit": "contain"
-                }}
-            />
-        </Box>
-        <Loader size="sm" type="dots" color="orange" />
-        <Text size="sm" c={MUTED}>Thinking...</Text>
-    </Group>;
+            <div style={{
+                "display": "flex",
+                "gap": "4px",
+                "alignItems": "flex-end"
+            }}>
+                {[0, 1, 2].map(lambda i: int -> any {
+                    delays = ["0s", "0.15s", "0.3s"];
+                    return <div
+                        key={i}
+                        style={{
+                            "width": "6px",
+                            "height": "6px",
+                            "borderRadius": "50%",
+                            "backgroundColor": ORANGE,
+                            "animation": "dotBounce 1.1s ease-in-out infinite",
+                            "animationDelay": delays[i]
+                        }}
+                    />;
+                })}
+            </div>
+            <span style={{
+                "fontSize": "14px",
+                "color": MUTED,
+                "fontWeight": "400",
+                "marginLeft": "8px"
+            }}>
+                Thinking...
+            </span>
+        </div>
+    </div>;
 
     # Check if we have messages
-    hasMessages = False;
-    for _ in chat.messages {
-        hasMessages = True;
-        break;
-    }
+    hasMessages = chat.messages.length > 0;
 
     loadingContent = None;
     if chat.isLoading {
         loadingContent = loadingIndicator;
     }
 
-    # Guest message count badge (top bar)
-    messageCountDisplay = None;
-    if not isAuthenticated {
-        messageCountDisplay = <Badge
-            variant="light"
-            radius="sm"
-            size="sm"
-            styles={{
-                "root": {
-                    "background": "rgba(249,115,22,0.12)",
-                    "border": "1px solid rgba(249,115,22,0.25)",
-                    "color": "#fdba74"
-                }
-            }}
-        >
-            {chat.messageCount}{" / "}{chat.maxFreeMessages}{" FREE MESSAGES"}
-        </Badge>;
-    }
-
-    # Messages content
-    messagesContent = <EmptyState onSendMessage={chat.handleSendMessage} BG={BG} TEXT={TEXT} MUTED={MUTED} ORANGE={ORANGE} />;
+    # Messages content or empty state
+    mainContent = None;
     if hasMessages {
-        messagesContent = <Box maw={950} mx="auto" p="md">
-            <Stack gap="md">
-                {messageItems}
-                {loadingContent}
-            </Stack>
-            <div ref={chat.messagesEndRef} />
-        </Box>;
+        # Active conversation - messages area
+        mainContent = <ScrollArea ref={scrollAreaRef} style={{"flex": "1", "paddingLeft": "16px", "paddingRight": "16px"}} type="scroll">
+            <div style={{
+                "maxWidth": "768px",
+                "margin": "0 auto",
+                "paddingTop": "16px",
+                "paddingBottom": "16px",
+                "minWidth": "0",
+                "overflow": "hidden"
+            }}>
+                <div style={{
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": "8px"
+                }}>
+                    {messageItems}
+                    {loadingContent}
+                </div>
+                <div ref={chat.messagesEndRef} />
+            </div>
+        </ScrollArea>;
+    } else {
+        # Empty state
+        mainContent = <div style={{
+            "flex": "1",
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "center",
+            "justifyContent": "center",
+            "paddingLeft": "16px",
+            "paddingRight": "16px",
+            "marginTop": "-96px"
+        }}>
+            <div style={{
+                "maxWidth": "768px",
+                "width": "100%",
+                "margin": "0 auto",
+                "display": "flex",
+                "flexDirection": "column",
+                "alignItems": "center",
+                "justifyContent": "center"
+            }}>
+                <h1 style={{
+                    "fontSize": "30px",
+                    "color": TEXT_SECONDARY,
+                    "fontWeight": "500",
+                    "fontFamily": "'Inter, sans-serif'",
+                    "marginBottom": "36px",
+                    "textAlign": "center"
+                }}>
+                    How can <span style={{"color": ORANGE}}>Jaseci</span> help you today?
+                </h1>
+                
+                <div style={{"width": "100%"}}>
+                    <ChatInput
+                        onSendMessage={chat.handleSendMessage}
+                        disabled={False}
+                        placeholder="Ask about Jac syntax, functions, loops, classes, or request code examples..."
+                        isLoading={chat.isLoading}
+                        onStop={chat.handleStopGeneration}
+                    />
+                    
+                    <div style={{
+                        "display": "flex",
+                        "gap": "12px",
+                        "marginTop": "2px",
+                        "flexWrap": "wrap",
+                        "justifyContent": "center"
+                    }}>
+                        {["What is by llm?", "What are walkers?", "What are nodes?"].map(lambda text: str -> any {
+                            return <button
+                                key={text}
+                                onClick={lambda -> None {
+                                    chat.handleSendMessage(text);
+                                }}
+                                style={{
+                                    "padding": "10px 18px",
+                                    "border": "none",
+                                    "borderRadius": "24px",
+                                    "background": "rgba(255, 255, 255, 0.05)",
+                                    "color": TEXT_SECONDARY,
+                                    "cursor": "pointer",
+                                    "fontSize": "16px",
+                                    "transition": "all 0.2s ease",
+                                    "fontFamily": "Inter"
+                                }}
+                                onMouseEnter={lambda e: any -> None {
+                                    e.target.style.background = "rgba(249, 115, 22, 0.15)";
+                                }}
+                                onMouseLeave={lambda e: any -> None {
+                                    e.target.style.background = "rgba(255, 255, 255, 0.05)";
+                                }}
+                            >
+                                {text}
+                            </button>;
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>;
     }
 
     # Layout widths when docs open
-    chatAreaWidth = "100%";
+    chatContainerStyle = {
+        "flex": "1",
+        "display": "flex",
+        "flexDirection": "column",
+        "minWidth": "0",
+        "transition": "all 0.3s ease"
+    };
     if docPanelOpen {
-        chatAreaWidth = "50%";
+        chatContainerStyle["width"] = "50%";
     }
 
     # Doc panel element
     docPanelElement = None;
     if docPanelOpen {
-        docPanelElement = <Box style={{
+        docPanelElement = <div style={{
             "width": "50%",
             "borderLeft": "1px solid " + BORDER,
             "background": BG
@@ -148,16 +255,85 @@ def:pub JacChatbot() -> any {
                 isVisible={docPanelOpen}
                 onToggle={toggleDocPanel}
             />
-        </Box>;
+        </div>;
     }
 
-    # Button variant for docs
-    docsBtnVariant = "outline";
-    if docPanelOpen {
-        docsBtnVariant = "filled";
-    }
+    # Mobile menu button (visible only on mobile)
+    mobileMenuButton = <button
+        onClick={toggleSidebar}
+        style={{
+            "position": "fixed",
+            "top": "8px",
+            "left": "8px",
+            "zIndex": "40",
+            "display": "flex",
+            "alignItems": "center",
+            "justifyContent": "center",
+            "width": "40px",
+            "height": "40px",
+            "border": "none",
+            "borderRadius": "8px",
+            "background": "rgba(55, 65, 81, 0.9)",
+            "color": TEXT,
+            "cursor": "pointer"
+        }}
+    >
+        <IconMenu2 size={20} />
+    </button>;
 
-    return <Box style={{
+    # Header bar (desktop only - uses media query)
+    headerBar = <div style={{
+        "display": "flex",
+        "alignItems": "center",
+        "justifyContent": "space-between",
+        "padding": "8px",
+        "borderBottom": "1px solid " + BORDER,
+        "background": BG
+    }}>
+        <div style={{
+            "display": "flex",
+            "alignItems": "center",
+            "gap": "12px"
+        }}>
+            <img
+                src="/logo.png"
+                style={{
+                    "width": "32px",
+                    "height": "32px",
+                    "objectFit": "contain"
+                }}
+            />
+            <h1 style={{
+                "fontSize": "20px",
+                "fontWeight": "600",
+                "color": TEXT
+            }}>
+                Jac GPT
+            </h1>
+        </div>
+
+        <button
+            onClick={toggleDocPanel}
+            style={{
+                "display": "flex",
+                "alignItems": "center",
+                "gap": "8px",
+                "padding": "8px 16px",
+                "border": (("1px solid " + ORANGE if docPanelOpen else "1px solid " + BORDER)),
+                "borderRadius": "8px",
+                "background": ((ORANGE if docPanelOpen else "transparent")),
+                "color": TEXT,
+                "cursor": "pointer",
+                "fontSize": "14px",
+                "transition": "all 0.2s ease"
+            }}
+        >
+            {((<IconX size={16} />) if docPanelOpen else (<IconBook size={16} />))}
+            <span>{(("Hide Docs") if docPanelOpen else ("Show Docs"))}</span>
+        </button>
+    </div>;
+
+    return <div style={{
         "display": "flex",
         "height": "100vh",
         "background": BG
@@ -175,184 +351,26 @@ def:pub JacChatbot() -> any {
             maxFreeMessages={chat.maxFreeMessages}
         />
 
-        <Box style={{"flex": "1", "display": "flex", "flexDirection": "column", "minWidth": "0"}}>
-            # Top bar
-            <Paper
-                p="sm"
-                px="md"
-                radius={0}
-                style={{
-                    "borderBottom": "1px solid " + BORDER,
-                    "background": TOPBAR_BG,
-                    "backdropFilter": "blur(10px)"
-                }}
-            >
-                <Group justify="space-between">
-                    <Group gap="md">
-                        <Burger
-                            opened={sidebarOpen}
-                            onClick={toggleSidebar}
-                            hiddenFrom="lg"
-                            size="sm"
-                            color="gray"
-                        />
+        <div style={{"flex": "1", "display": "flex", "overflow": "hidden"}}>
+            <div style={chatContainerStyle}>
+                {mobileMenuButton}
+                {headerBar}
+                
+                {mainContent}
 
-                        <Group gap="sm">
-                            <Box style={{
-                                "width": "32px",
-                                "height": "32px",
-                                "borderRadius": "10px",
-                                "background": "rgba(249,115,22,0.12)",
-                                "border": "1px solid rgba(249,115,22,0.35)",
-                                "display": "flex",
-                                "alignItems": "center",
-                                "justifyContent": "center"
-                            }}>
-                                <img
-                                    src="/logo.png"
-                                    style={{
-                                        "width": "20px",
-                                        "height": "20px",
-                                        "objectFit": "contain"
-                                    }}
-                                />
-                            </Box>
+                {(
+                    <ChatInput
+                        onSendMessage={chat.handleSendMessage}
+                        disabled={False}
+                        placeholder="Ask about Jac syntax, functions, loops, classes, or request code examples..."
+                        isLoading={chat.isLoading}
+                        onStop={chat.handleStopGeneration}
+                    />
+                    if hasMessages else None
+                )}
+            </div>
 
-                            <Text fw={700} size="lg" c={TEXT}>
-                                Jac GPT
-                            </Text>
-                        </Group>
-                    </Group>
-
-                    <Group gap="sm">
-                        <Button
-                            onClick={toggleDocPanel}
-                            variant={docsBtnVariant}
-                            size="sm"
-                            radius="md"
-                            leftSection={((<IconBook size={16} />) if not docPanelOpen else (<IconX size={16} />))}
-                            styles={{
-                                "root": {
-                                    "background": (ORANGE if docPanelOpen else "transparent"),
-                                    "borderColor": (ORANGE if not docPanelOpen else ORANGE),
-                                    "color": (TEXT if docPanelOpen else TEXT),
-                                    "boxShadow": (("0 0 20px rgba(249,115,22,0.18)") if docPanelOpen else "none")
-                                }
-                            }}
-                            visibleFrom="md"
-                        >
-                            {(("Hide Docs") if docPanelOpen else ("Show Docs"))}
-                        </Button>
-
-                        {messageCountDisplay}
-                    </Group>
-                </Group>
-            </Paper>
-
-            # Main content + optional docs panel
-            <Box style={{"flex": "1", "display": "flex", "overflow": "hidden"}}>
-                <Box style={{
-                    "flex": "1",
-                    "display": "flex",
-                    "flexDirection": "column",
-                    "minWidth": "0",
-                    "width": chatAreaWidth
-                }}>
-                    <ScrollArea style={{"flex": "1"}} type="scroll">
-                        {messagesContent}
-                    </ScrollArea>
-
-                    <Box style={{
-                        "borderTop": "1px solid " + BORDER,
-                        "background": "rgba(20,20,20,0.85)"
-                    }}>
-                        <ChatInput
-                            onSendMessage={chat.handleSendMessage}
-                            disabled={False}
-                            placeholder="Ask me anything about Jac..."
-                            isLoading={chat.isLoading}
-                            onStop={chat.handleStopGeneration}
-                        />
-                    </Box>
-                </Box>
-
-                {docPanelElement}
-            </Box>
-        </Box>
-    </Box>;
-}
-
-# Empty state component (Jaseci theme)
-def EmptyState(onSendMessage: any, BG: str, TEXT: str, MUTED: str, ORANGE: str) -> any {
-    suggestions = [
-        "What is Jac programming language?",
-        "How do I create a walker?",
-        "Explain nodes and edges",
-        "Show me a byLLM example"
-    ];
-
-    return <Box style={{
-        "flex": "1",
-        "display": "flex",
-        "flexDirection": "column",
-        "alignItems": "center",
-        "justifyContent": "center",
-        "padding": "32px",
-        "textAlign": "center",
-        "background": BG
-    }}>
-        <Box style={{
-            "width": "84px",
-            "height": "84px",
-            "borderRadius": "22px",
-            "background": "rgba(249,115,22,0.12)",
-            "border": "1px solid rgba(249,115,22,0.35)",
-            "display": "flex",
-            "alignItems": "center",
-            "justifyContent": "center",
-            "marginBottom": "22px",
-            "boxShadow": "0 0 40px rgba(249,115,22,0.15)"
-        }}>
-            <img
-                src="/logo.png"
-                style={{
-                    "width": "38px",
-                    "height": "38px",
-                    "objectFit": "contain"
-                }}
-            />
-        </Box>
-
-        <Text size="xl" fw={800} c={TEXT} mb="xs">
-            Ask me anything about Jac
-        </Text>
-
-        <Text size="sm" c={MUTED} maw={520} mb="xl">
-            Your AI-powered companion for learning and coding in Jac. I can help with syntax, walkers, nodes, edges, and more!
-        </Text>
-
-        <Stack gap="sm" w="100%" maw={520}>
-            {suggestions.map(lambda suggestion: any, idx: int -> any {
-                return <Button
-                    key={idx}
-                    variant="outline"
-                    radius="md"
-                    size="md"
-                    fullWidth
-                    justify="flex-start"
-                    leftSection={<IconMessageCircle size={16} color={MUTED} />}
-                    onClick={lambda -> None { onSendMessage(suggestion); }}
-                    styles={{
-                        "root": {
-                            "background": "rgba(249,115,22,0.06)",
-                            "borderColor": "rgba(249,115,22,0.25)",
-                            "color": "#e5e7eb"
-                        }
-                    }}
-                >
-                    {suggestion}
-                </Button>;
-            })}
-        </Stack>
-    </Box>;
+            {docPanelElement}
+        </div>
+    </div>;
 }

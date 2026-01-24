@@ -103,23 +103,23 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
     logoSrc = "/logo.png";
 
     if isUser {
-        # User message - right aligned with orange bubble
-        return <Box py="sm" px="xs" style={{"animation": "fadeIn 0.3s ease"}}>
+        # User message - right aligned with stadium shape
+        return <Box py="4px" px="xs" style={{"animation": "fadeIn 0.3s ease"}}>
             <Group justify="flex-end">
-                <Paper
-                    p="md"
-                    radius="lg"
-                    maw="80%"
+                <div
                     style={{
-                        "background": "rgba(249,115,22,0.14)",
-                        "border": "1px solid rgba(249,115,22,0.28)",
-                        "boxShadow": "0 10px 30px rgba(0,0,0,0.22)"
+                        "padding": "16px",
+                        "maxWidth": "80%",
+                        "background": "rgba(255, 255, 255, 0.05)",
+                        "border": "none",
+                        "borderRadius": "24px",
+                        "boxShadow": "none"
                     }}
                 >
                     <Text size="sm" c="white" style={{"whiteSpace": "pre-wrap", "lineHeight": "1.6"}}>
                         {message}
                     </Text>
-                </Paper>
+                </div>
             </Group>
         </Box>;
     }
@@ -211,15 +211,21 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
         },
 
         "strong": lambda props: any -> any {
-            return <Text component="strong" fw={700} c="white" span>
+            return <strong style={{
+                "fontWeight": "700",
+                "color": "#ffffff"
+            }}>
                 {props.children}
-            </Text>;
+            </strong>;
         },
 
         "em": lambda props: any -> any {
-            return <Text component="em" fs="italic" c="gray.4" span>
+            return <em style={{
+                "fontStyle": "italic",
+                "color": "#a1a1aa"
+            }}>
                 {props.children}
-            </Text>;
+            </em>;
         },
 
         "a": lambda props: any -> any {
@@ -244,41 +250,15 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
         }
     };
 
-    # Bot message - left aligned with logo avatar
+    # Bot message - left aligned without logo
     return <Box py="sm" px="xs" style={{"animation": "fadeIn 0.3s ease"}}>
-        <Group gap="sm" align="flex-start" wrap="nowrap">
-            <Box
-                style={{
-                    "width": "32px",
-                    "height": "32px",
-                    "borderRadius": "8px",
-                    "background": "rgba(249,115,22,0.10)",
-                    "border": "1px solid rgba(249,115,22,0.25)",
-                    "display": "flex",
-                    "alignItems": "center",
-                    "justifyContent": "center",
-                    "flexShrink": "0"
-                }}
+        <Box style={{"flex": "1", "minWidth": "0"}}>
+            <ReactMarkdown
+                rehypePlugins={[rehypeHighlight]}
+                components={components}
             >
-                <img
-                    src={logoSrc}
-                    alt="Jaseci"
-                    style={{
-                        "width": "18px",
-                        "height": "18px",
-                        "objectFit": "contain"
-                    }}
-                />
-            </Box>
-
-            <Box style={{"flex": "1", "minWidth": "0"}}>
-                <ReactMarkdown
-                    rehypePlugins={[rehypeHighlight]}
-                    components={components}
-                >
-                    {message}
-                </ReactMarkdown>
-            </Box>
-        </Group>
+                {message}
+            </ReactMarkdown>
+        </Box>
     </Box>;
 }
