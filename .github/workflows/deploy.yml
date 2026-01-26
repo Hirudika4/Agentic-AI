@@ -48,7 +48,7 @@ jobs:
       - name: Install Jaseci packages
         run: |
           pip install --upgrade pip
-          pip install jaclang==0.9.9 jac-client==0.2.9 jac-scale==0.1.0 byllm==0.4.14
+          pip install jaclang jac-client jac-scale byllm
 
       # Install app dependencies (required for jac start to validate main.jac locally)
       - name: Install app dependencies
