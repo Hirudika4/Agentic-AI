@@ -374,7 +374,7 @@ walker:priv DeleteTodo {
 
 cl {
     import from react { useEffect }
-    import from "@jac-client/utils" { jacSignup, jacLogin, jacLogout, jacIsLoggedIn }
+    import from "@jac/runtime" { jacSignup, jacLogin, jacLogout, jacIsLoggedIn }
     import "./styles.css";
 
     def:pub app -> any {

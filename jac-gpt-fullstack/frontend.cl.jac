@@ -1,6 +1,6 @@
 """Main entry point for Jac GPT Client application."""
 
-import from "@jac-client/utils" { Router, Routes, Route }
+import from "@jac/runtime" { Router, Routes, Route }
 import from "@mantine/core" { MantineProvider, createTheme }
 
 import from .pages.JacChatbot { JacChatbot }

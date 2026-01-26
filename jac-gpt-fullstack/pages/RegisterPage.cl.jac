@@ -1,7 +1,7 @@
 """Register page component with Mantine UI (Jaseci theme)."""
 
 import from react { useEffect }
-import from "@jac-client/utils" { Link, useNavigate, jacIsLoggedIn }
+import from "@jac/runtime" { Link, useNavigate, jacIsLoggedIn }
 import from "@mantine/core" {
     Box,
     Paper,

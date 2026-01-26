@@ -1,7 +1,7 @@
 """Forgot password page component."""
 
 import from react { useState }
-import from "@jac-client/utils" { Link }
+import from "@jac/runtime" { Link }
 import from ..utils.cn { cn }
 
 def:pub ForgotPasswordPage() -> any {

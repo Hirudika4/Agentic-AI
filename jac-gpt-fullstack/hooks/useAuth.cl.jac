@@ -1,6 +1,6 @@
 """Authentication hook for managing user login/register state."""
 
-import from "@jac-client/utils" { useNavigate, jacLogin, jacSignup, jacLogout, jacIsLoggedIn }
+import from "@jac/runtime" { useNavigate, jacLogin, jacSignup, jacLogout, jacIsLoggedIn }
 
 """Hook for managing authentication state and actions."""
 def:pub useAuth() -> any {

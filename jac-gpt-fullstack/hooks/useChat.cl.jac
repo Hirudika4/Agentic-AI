@@ -1,7 +1,7 @@
 """Chat hook for managing chat state and interactions."""
 
 import from react { useState, useEffect, useRef }
-import from "@jac-client/utils" { jacIsLoggedIn }
+import from "@jac/runtime" { jacIsLoggedIn }
 import from ..services.jacService { createSession, getSession, sendMessage, getSuggestions, generateSessionId }
 import from ..hooks.useAuth { getUsernameFromToken }
 
