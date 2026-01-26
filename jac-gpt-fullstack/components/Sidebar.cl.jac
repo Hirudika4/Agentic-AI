@@ -6,7 +6,7 @@ Fix: Remove extra empty gap between Sign buttons and Help & FAQ (better layout).
 """
 
 import from react { useState }
-import from "@jac-client/utils" { Link, jacIsLoggedIn, jacLogout, useNavigate }
+import from "@jac/runtime" { Link, jacIsLoggedIn, jacLogout, useNavigate }
 import from "@mantine/core" {
     Box,
     Stack,

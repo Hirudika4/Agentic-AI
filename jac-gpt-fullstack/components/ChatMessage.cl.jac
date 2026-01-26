@@ -1,8 +1,7 @@
 """Chat message component with markdown rendering using Mantine UI (Jaseci theme)."""
 
-import from react { useState, useEffect }
+import from react { useState, useEffect, useRef }
 import from "react-markdown" { default as ReactMarkdown }
-import from "rehype-highlight" { default as rehypeHighlight }
 import from "@mantine/core" {
     Box,
     Group,
@@ -17,14 +16,21 @@ import from "@tabler/icons-react" {
     IconCheck
 }
 
-"""Code block component with copy functionality (Jaseci theme)."""
-def:pub CodeBlock(language: str, code: str, children: any = None) -> any {
-    has copied: bool = False;
+# Monaco Editor - React wrapper
+import from "@monaco-editor/react" { Editor }
+
+# Syntax highlighting utilities
+import from "..utils/syntax_highlighting" { loadSyntax, configureTheme }
+
+
+"""Generic code block component with copy functionality (for non-Jac languages)."""
+def:pub CodeBlock(language: str, code: str, children: any = null) -> any {
+    has copied: bool = false;
 
     def handleCopy() -> None {
         navigator.clipboard.writeText(code);
-        copied = True;
-        setTimeout(lambda -> None { copied = False; }, 2000);
+        copied = true;
+        setTimeout(lambda { copied = false; }, 2000);
     }
 
     copyLabel = "Copy code";
@@ -91,19 +97,158 @@ def:pub CodeBlock(language: str, code: str, children: any = None) -> any {
     </Box>;
 }
 
+
+"""Monaco Jac code block with TextMate syntax highlighting."""
+def:pub JacMonacoBlock(code: str) -> any {
+    has copied: bool = false;
+    editorRef = useRef(null);
+    monacoRef = useRef(null);
+    has themeApplied: bool = false;
+
+    def handleCopy() -> None {
+        navigator.clipboard.writeText(code);
+        copied = true;
+        setTimeout(lambda { copied = false; }, 2000);
+    }
+
+    # Handle Monaco mount - load Jac syntax
+    async def handleOnMount(editor: any, monaco: any) -> None {
+        editorRef.current = editor;
+        monacoRef.current = monaco;
+        
+        console.log("🚀 Monaco editor mounted, loading syntax...");
+        
+        try {
+            # Load TextMate grammar
+            grammarConfig = await loadSyntax(monaco, editor);
+            
+            if not grammarConfig {
+                console.error("⚠️ Grammar config is null");
+                return;
+            }
+            
+            console.log("✅ Grammar loaded, applying theme...");
+            
+            # Apply Jaseci Orange theme
+            await configureTheme(monaco, grammarConfig, true);
+            
+            # Wait a bit for theme to apply - FIXED LINE
+            await Reflect.construct(Promise, [lambda resolve: any { setTimeout(resolve, 200); }]);
+            
+            themeApplied = true;
+            console.log("✅ Theme applied successfully!");
+            
+            # Force editor refresh
+            if editorRef.current {
+                editorRef.current.updateOptions({ readOnly: true });
+            }
+            
+        } except error {
+            console.error("❌ Failed to load Jac syntax:", error);
+            console.error("Error details:", error.message);
+        }
+    }
+
+    # Calculate height based on line count
+    lineCount = code.split("\n").length;
+    calculatedHeight = Math.max(80, Math.min(lineCount * 20 + 40, 500));
+
+    copyLabel = "Copy code";
+    copyColor = "gray";
+    copyIcon = <IconCopy size={14} />;
+    if copied {
+        copyLabel = "Copied!";
+        copyColor = "green";
+        copyIcon = <IconCheck size={14} />;
+    }
+
+    return <Box my="sm">
+        <Paper
+            radius="md"
+            style={{
+                "background": "rgba(0,0,0,0.42)",
+                "border": "1px solid rgba(255,255,255,0.10)",
+                "overflow": "hidden"
+            }}
+        >
+            <Group
+                justify="space-between"
+                px="md"
+                py="xs"
+                style={{
+                    "borderBottom": "1px solid rgba(255,255,255,0.06)",
+                    "background": "rgba(0,0,0,0.25)"
+                }}
+            >
+                <Text size="xs" c="dimmed" ff="monospace">jac</Text>
+                <Tooltip label={copyLabel} position="left">
+                    <ActionIcon
+                        onClick={handleCopy}
+                        variant="subtle"
+                        color={copyColor}
+                        size="sm"
+                    >
+                        {copyIcon}
+                    </ActionIcon>
+                </Tooltip>
+            </Group>
+
+            <Box style={{"height": f"{calculatedHeight}px"}}>
+                <Editor
+                    height="100%"
+                    width="100%"
+                    language="jac"
+                    value={code}
+                    theme="vs-dark"
+                    onMount={handleOnMount}
+                    loading="Loading editor..."
+                    options={{
+                        "readOnly": true,
+                        "minimap": { "enabled": false },
+                        "scrollBeyondLastLine": false,
+                        "lineNumbers": "on",
+                        "fontSize": 13,
+                        "lineHeight": 20,
+                        "fontFamily": "JetBrains Mono, Consolas, Monaco, monospace",
+                        "automaticLayout": true,
+                        "wordWrap": "on",
+                        "renderLineHighlight": "none",
+                        "contextmenu": false,
+                        "folding": false,
+                        "glyphMargin": false,
+                        "lineDecorationsWidth": 0,
+                        "lineNumbersMinChars": 3,
+                        "overviewRulerBorder": false,
+                        "scrollbar": {
+                            "vertical": "auto",
+                            "horizontal": "auto",
+                            "verticalScrollbarSize": 8,
+                            "horizontalScrollbarSize": 8
+                        },
+                        "padding": { "top": 8, "bottom": 8 }
+                    }}
+                />
+            </Box>
+            
+            {not themeApplied and (
+                <Box px="md" py="xs">
+                    <Text size="xs" c="dimmed" fs="italic">
+                        Loading syntax highlighting...
+                    </Text>
+                </Box>
+            )}
+        </Paper>
+    </Box>;
+}
+
 """Chat message component."""
-def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
+def:pub ChatMessage(message: str, isUser: bool, timestamp: any = null) -> any {
 
-    # Jaseci theme tokens
     ORANGE = "#f97316";
-    ORANGE_DARK = "#ea580c";
-    BORDER = "rgba(255,255,255,0.10)";
-
-    # bot logo from public folder
     logoSrc = "/logo.png";
 
     if isUser {
-        # User message - right aligned with stadium shape
+        # User message - right aligned
         return <Box py="4px" px="xs" style={{"animation": "fadeIn 0.3s ease"}}>
             <Group justify="flex-end">
                 <div
@@ -124,7 +269,7 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
         </Box>;
     }
 
-    # Custom components for ReactMarkdown (orange accents)
+    # Bot message: Markdown enabled
     components = {
         "code": lambda props: any -> any {
             className = props.className or "";
@@ -145,10 +290,18 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
                 codeContent = codeContent.slice(0, -1);
             }
 
+            # Block code
             if not isInline and language {
+                # Use Monaco for Jac code
+                if language == "jac" {
+                    return <JacMonacoBlock code={codeContent} />;
+                }
+                
+                # Use simple block for other languages
                 return <CodeBlock language={language} code={codeContent} />;
             }
 
+            # Inline code
             return <Code
                 style={{
                     "background": "rgba(249,115,22,0.15)",
@@ -250,13 +403,10 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = None) -> any {
         }
     };
 
-    # Bot message - left aligned without logo
+    # Bot message - left aligned
     return <Box py="sm" px="xs" style={{"animation": "fadeIn 0.3s ease"}}>
         <Box style={{"flex": "1", "minWidth": "0"}}>
-            <ReactMarkdown
-                rehypePlugins={[rehypeHighlight]}
-                components={components}
-            >
+            <ReactMarkdown components={components}>
                 {message}
             </ReactMarkdown>
         </Box>
