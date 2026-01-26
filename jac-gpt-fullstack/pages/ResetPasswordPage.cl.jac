@@ -1,7 +1,7 @@
 """Reset password page component."""
 
 import from react { useState, useEffect }
-import from "@jac-client/utils" { Link, useNavigate }
+import from "@jac/runtime" { Link, useNavigate }
 import from ..utils.cn { cn }
 
 def:pub ResetPasswordPage() -> any {

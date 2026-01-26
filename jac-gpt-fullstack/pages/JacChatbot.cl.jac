@@ -1,7 +1,7 @@
 # Main chatbot page component following complete specification
 
 import from react { useState, useRef, useEffect }
-import from "@jac-client/utils" { jacIsLoggedIn }
+import from "@jac/runtime" { jacIsLoggedIn }
 import from "@mantine/core" { ScrollArea }
 import from "@tabler/icons-react" { IconBook, IconX, IconMenu2 }
 import from ..hooks.useChat { useChat }

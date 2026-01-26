@@ -266,7 +266,7 @@ cl {
 
 ```jac
 cl {
-    import from "@jac-client/utils" { cn }
+    import from "@jac/runtime" { cn }
 
     def:pub StylingExamples() -> any {
         has condition: bool = True;
@@ -347,7 +347,7 @@ Client-side walker invocation:
 
 ```jac
 cl {
-    import from "@jac-client/utils" { jacSpawn }
+    import from "@jac/runtime" { jacSpawn }
 
     async def fetch_users -> None {
         result = await jacSpawn("GetUsers", {});
@@ -373,7 +373,7 @@ jac start main.jac --port 8000
 ### 1 Built-in Auth Functions
 
 ```jac
-import from "@jac-client/utils" {
+import from "@jac/runtime" {
     jacLogin,
     jacSignup,
     jacLogout,
