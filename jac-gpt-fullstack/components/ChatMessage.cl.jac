@@ -116,18 +116,13 @@ def:pub JacMonacoBlock(code: str) -> any {
         editorRef.current = editor;
         monacoRef.current = monaco;
         
-        console.log("🚀 Monaco editor mounted, loading syntax...");
-        
         try {
             # Load TextMate grammar
             grammarConfig = await loadSyntax(monaco, editor);
             
             if not grammarConfig {
-                console.error("⚠️ Grammar config is null");
                 return;
             }
-            
-            console.log("✅ Grammar loaded, applying theme...");
             
             # Apply Jaseci Orange theme
             await configureTheme(monaco, grammarConfig, true);
@@ -136,16 +131,13 @@ def:pub JacMonacoBlock(code: str) -> any {
             await Reflect.construct(Promise, [lambda resolve: any { setTimeout(resolve, 200); }]);
             
             themeApplied = true;
-            console.log("✅ Theme applied successfully!");
             
             # Force editor refresh
             if editorRef.current {
                 editorRef.current.updateOptions({ readOnly: true });
             }
             
-        } except error {
-            console.error("❌ Failed to load Jac syntax:", error);
-            console.error("Error details:", error.message);
+        }  except Exception as error{
         }
     }
 

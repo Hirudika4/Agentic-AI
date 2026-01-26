@@ -1,6 +1,7 @@
 """Monaco syntax highlighting utilities for Jac language (TextMate grammar)."""
 
-import from "monaco-textmate" { Registry, wireTmGrammars }
+import from "monaco-textmate" { Registry }
+import from "monaco-editor-textmate" { wireTmGrammars }
 import from "onigasm" { loadWASM }
 
 # CORRECTED PATHS - Use absolute paths from web root
@@ -23,20 +24,16 @@ async def:pub loadSyntax(monaco: any, editor: any) -> any {
         if not languageRegistered {
             monaco.languages.register({ id: "jac" });
             languageRegistered = true;
-            console.log("✅ Jac language registered");
         }
         
         # Load WASM only once
         if not wasmInitialized {
-            console.log("🔄 Loading WASM from:", ONIG_WASM_PATH);
             await loadWASM(ONIG_WASM_PATH);
             wasmInitialized = true;
-            console.log("✅ WASM loaded successfully");
         }
         
         # Load grammar only once
         if not grammarLoaded {
-            console.log("🔄 Loading Jac grammar...");
             
             # Fetch Jac grammar from GitHub
             response = await fetch("https://raw.githubusercontent.com/jaseci-labs/jac-vscode/main/syntaxes/jac.tmLanguage.json");
@@ -53,8 +50,6 @@ async def:pub loadSyntax(monaco: any, editor: any) -> any {
             
             jacGrammar = await response.json();
             cachedGrammarConfig = await grammarConfigRes.json();
-            
-            console.log("✅ Grammar files loaded");
             
             # Create TextMate registry
             registry = Reflect.construct(Registry, [{
@@ -74,21 +69,16 @@ async def:pub loadSyntax(monaco: any, editor: any) -> any {
             cachedGrammarMap = grammar;
             
             grammarLoaded = true;
-            console.log("✅ Grammar registry created");
         }
         
         # Wire grammar to editor
         if editor and cachedRegistry and cachedGrammarMap {
-            console.log("🔄 Wiring grammar to editor...");
             await wireTmGrammars(monaco, cachedRegistry, cachedGrammarMap, editor);
-            console.log("✅ Grammar wired successfully!");
         }
-        
+        # 
         return cachedGrammarConfig;
         
-    } except error {
-        console.error("❌ Error in loadSyntax:", error);
-        console.error("Error details:", error.message);
+    } except Exception as error {
         return null;
     }
 }
@@ -96,12 +86,10 @@ async def:pub loadSyntax(monaco: any, editor: any) -> any {
 """Configure Monaco theme with Jaseci Orange colors."""
 async def:pub configureTheme(monaco: any, grammarConfig: any, isDark: bool = true) {
     try {
-        console.log("🎨 Configuring Jac theme...");
         
         # Set language configuration
         if grammarConfig {
             monaco.languages.setLanguageConfiguration("jac", grammarConfig);
-            console.log("✅ Language configuration set");
         }
         
         # Define Jaseci Orange theme (only once)
@@ -153,14 +141,11 @@ async def:pub configureTheme(monaco: any, grammarConfig: any, isDark: bool = tru
             });
             
             themeRegistered = true;
-            console.log("✅ Theme registered");
         }
         
         # Apply theme
         monaco.editor.setTheme("jac-theme");
-        console.log("✅ Jac theme applied!");
         
-    } except error {
-        console.error("❌ Error in configureTheme:", error);
+    } except Exception as error{
     }
 }
