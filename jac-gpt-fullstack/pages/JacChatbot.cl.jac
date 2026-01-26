@@ -177,7 +177,7 @@ def:pub JacChatbot() -> any {
                     "marginBottom": "36px",
                     "textAlign": "center"
                 }}>
-                    How can <span style={{"color": ORANGE}}>Jaseci</span> help you today?
+                    How can I help you today?
                 </h1>
                 
                 <div style={{"width": "100%"}}>
