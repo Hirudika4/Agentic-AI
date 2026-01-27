@@ -1,6 +1,6 @@
 import json;
 import os;
-import from services.database { get_database }
+import from datetime {datetime}
 
 impl RagChat.chat {
     response = self.respond(
@@ -219,23 +219,10 @@ impl Session.chat {
       self.user_email = visitor.user_email;
    }
 
-   db = get_database();
-   existing_session = db.get_session(self.id);
-
-   if existing_session and not self.chat_history {
-      self.chat_history = db.get_chat_history(self.id);
-   } elif not existing_session {
-      # Create session with user email if available
-      db_result = db.create_session(self.id, self.user_email);
-      if not self.chat_history {
-            self.chat_history = [];
-      }
-   }
-
+   # Use chat history from the persisted session node
    visitor.chat_history = self.chat_history;
 
-   # Save user message to database
-   db.save_message(self.id, "user", visitor.message);
+   # Add user message to chat history
    visitor.chat_history.append({"role": "user", "content": visitor.message});
 
    response_walker = infer(
@@ -243,10 +230,11 @@ impl Session.chat {
       chat_history=self.chat_history
    ) spawn root;
 
-   # Save assistant response to database
-   db.save_message(self.id, "assistant", response_walker.response);
-   visitor.chat_history.append({"role": "assistant", "content": response_walker.response});
-   self.chat_history = visitor.chat_history;
+   # The Chat node implementations already append the assistant response
+   # to the chat_history, so we just need to update the session's updated_at
+   # Note: self.chat_history is the same reference as passed to infer, so it's already updated
+   self.chat_history = response_walker.chat_history;
+   self.updated_at = datetime.now().isoformat();
 
    report {
       "response": response_walker.response,
@@ -256,35 +244,32 @@ impl Session.chat {
 }
 
 impl get_session.get_chat_history {
-   # Try to get session from database first
-   db = get_database();
-   existing_session = db.get_session(self.session_id);
-
-   if existing_session {
-      chat_history = db.get_chat_history(self.session_id);
-      report {
-            "chat_history": chat_history,
-            "session_id": self.session_id,
-            "found": true,
-            "stats": db.get_session_stats(self.session_id)
-      };
-   } else {
-      # Check if session exists in memory
-      visit [-->](`?Session)(?id == self.session_id) else {
-            report {"chat_history": [], "session_id": self.session_id, "found": false};
+   # Query session from graph (automatically persisted)
+   all_sessions = [-->(`?Session)];
+   for session in all_sessions {
+      if session.id == self.session_id {
+         visit session;
+         return;
       }
    }
+   report {"chat_history": [], "session_id": self.session_id, "found": False};
 }
 
 impl get_session.return_history {
-   # Also get database stats for the session
-   db = get_database();
-   stats = db.get_session_stats(self.session_id);
-
+   user_msgs = len([m for m in here.chat_history if m["role"] == "user"]);
+   assistant_msgs = len([m for m in here.chat_history if m["role"] == "assistant"]);
+   stats = {
+      "session_id": here.id,
+      "total_messages": len(here.chat_history),
+      "user_messages": user_msgs,
+      "assistant_messages": assistant_msgs,
+      "created_at": here.created_at,
+      "updated_at": here.updated_at
+   };
    report {
       "chat_history": here.chat_history,
       "session_id": here.id,
-      "found": true,
+      "found": True,
       "stats": stats
    };
 }
@@ -296,92 +281,145 @@ impl new_session.create_session {
       self.session_id = f"session_{int(time.time())}";
    }
 
-   # Create session in database
-   db = get_database();
-   db_session = db.create_session(self.session_id);
+   now = datetime.now().isoformat();
 
+   # Create session node (automatically persisted by Jac)
    session_node = here ++> Session(
       id=self.session_id,
-      chat_history=[]
+      chat_history=[],
+      created_at=now,
+      updated_at=now
    );
 
    report {
       "session_id": self.session_id,
       "status": "created",
-      "chat_history": [],
-      "database_created": bool(db_session)
+      "chat_history": []
    };
 }
 
 impl get_user_profile.fetch_profile {
-   db = get_database();
-   # Get or create user profile
-   profile = db.get_user_profile(self.email);
-   if not profile {
-      role = "admin" if self.email == "admin.jacgpt@jaseci.org" else "user";
-      name = "Admin User" if role == "admin" else "User";
-      db.create_user_profile(self.email, name, role);
-      profile = {
-            "email": self.email,
-            "name": name,
-            "role": role
-      };
-   }
+   # User profiles are managed by JAC Cloud's built-in user system
+   # Determine role based on email
+   is_admin = self.email == "admin.jacgpt@jaseci.org";
+   role = "admin" if is_admin else "user";
+   name = "Admin User" if is_admin else "User";
+
+   profile = {
+      "email": self.email,
+      "name": name,
+      "role": role,
+      "is_admin": is_admin
+   };
 
    report {
       "user": profile,
-      "isAdmin": profile.get("role") == "admin"
+      "isAdmin": is_admin
    };
 }
 
 impl create_user_profile.setup_profile {
-   db = get_database();
-   # Determine role based on email
-   role = "admin" if self.email == "admin.jacgpt@jaseci.org" else "user";
-   display_name = self.name if self.name else ("Admin User" if role == "admin" else "User");
-
-   # Create or update user profile
-   db.create_user_profile(self.email, display_name, role);
+   # User profiles are managed by JAC Cloud's built-in user system
+   # This just returns the profile info based on the email
+   is_admin = self.email == "admin.jacgpt@jaseci.org";
+   role = "admin" if is_admin else "user";
+   display_name = self.name if self.name else ("Admin User" if is_admin else "User");
 
    report {
       "success": True,
       "message": "Profile created successfully",
       "user": {
-            "email": self.email,
-            "name": display_name,
-            "role": role
+         "email": self.email,
+         "name": display_name,
+         "role": role
       }
    };
 }
 
 impl save_user_location.save_location {
-   db = get_database();
-   # Save location data to user profile
-   success = db.save_user_location(self.email, self.location);
+   now = datetime.now().isoformat();
 
-   if success {
-      report {
-            "success": True,
-            "message": "Location saved successfully",
-            "email": self.email,
-            "location": self.location
-      };
-   } else {
-      report {
-            "success": False,
-            "error": "Failed to save location"
-      };
+   # Check if UserLocation already exists for this email
+   all_locations = [-->(`?UserLocation)];
+   existing_loc = None;
+   for loc in all_locations {
+      if loc.email == self.email {
+         existing_loc = loc;
+         break;
+      }
    }
+
+   if existing_loc {
+      # Update existing location
+      existing_loc.latitude = self.location.get("latitude", 0.0);
+      existing_loc.longitude = self.location.get("longitude", 0.0);
+      existing_loc.city = self.location.get("city", "");
+      existing_loc.country = self.location.get("country", "");
+      existing_loc.ip = self.location.get("ip", "");
+      existing_loc.updated_at = now;
+   } else {
+      # Create new UserLocation node
+      here ++> UserLocation(
+         email=self.email,
+         latitude=self.location.get("latitude", 0.0),
+         longitude=self.location.get("longitude", 0.0),
+         city=self.location.get("city", ""),
+         country=self.location.get("country", ""),
+         ip=self.location.get("ip", ""),
+         updated_at=now
+      );
+   }
+
+   report {
+      "success": True,
+      "message": "Location saved successfully",
+      "email": self.email,
+      "location": self.location
+   };
 }
 
 impl get_all_users.list_users {
-   db = get_database();
-   auth_email = self.requester_email;
-   if not auth_email and hasattr(here, "info") and here.info.get("auth_user") {
-      auth_email = here.info["auth_user"]["email"];
+   # Get unique users from sessions and their location data
+   sessions = [-->(`?Session)];
+   locations = [-->(`?UserLocation)];
+
+   # Build location lookup
+   location_map = {};
+   for loc in locations {
+      location_map[loc.email] = {
+         "location": {
+            "latitude": loc.latitude,
+            "longitude": loc.longitude,
+            "city": loc.city,
+            "country": loc.country,
+            "ip": loc.ip
+         },
+         "location_updated_at": loc.updated_at
+      };
    }
 
-   users = db.get_all_users();
+   # Get unique users from sessions
+   seen_emails = set();
+   users = [];
+
+   for session in sessions {
+      email = session.user_email;
+      if email and email not in seen_emails {
+         seen_emails.add(email);
+         is_admin = email == "admin.jacgpt@jaseci.org";
+         loc_data = location_map.get(email, {});
+
+         users.append({
+            "email": email,
+            "name": "Admin User" if is_admin else "User",
+            "role": "admin" if is_admin else "user",
+            "is_admin": is_admin,
+            "is_activated": True,
+            "location": loc_data.get("location", {}),
+            "location_updated_at": loc_data.get("location_updated_at")
+         });
+      }
+   }
 
    report {
       "users": users,
@@ -391,14 +429,37 @@ impl get_all_users.list_users {
 
 
 impl get_all_sessions_admin.list_all_sessions {
-   db = get_database();
-   # Get the authenticated user from JAC Cloud context
-   auth_email = self.requester_email;
-   if not auth_email and hasattr(here, "info") and here.info.get("auth_user") {
-      auth_email = here.info["auth_user"]["email"];
+   # Get all sessions from graph
+   all_sessions = [-->(`?Session)];
+
+   sessions = [];
+   for session in all_sessions {
+      # Get first user message for preview
+      first_message = None;
+      first_message_time = None;
+      for msg in session.chat_history {
+         if msg.get("role") == "user" {
+            first_message = msg.get("content");
+            break;
+         }
+      }
+
+      sessions.append({
+         "session_id": session.id,
+         "user_email": session.user_email,
+         "created_at": session.created_at,
+         "updated_at": session.updated_at,
+         "status": session.status,
+         "message_count": len(session.chat_history),
+         "first_message": first_message
+      });
    }
 
-   sessions = db.get_all_sessions_with_users();
+   # Sort by updated_at descending
+   def get_updated_at(x: dict) -> str {
+      return x.get("updated_at", "");
+   }
+   sessions.sort(key=get_updated_at, reverse=True);
 
    report {
       "sessions": sessions,
@@ -408,28 +469,48 @@ impl get_all_sessions_admin.list_all_sessions {
 
 
 impl get_session_messages_admin.get_session_chat {
-   db = get_database();
-
-   # Get the authenticated user from JAC Cloud context
-   auth_email = self.requester_email;
-   if not auth_email and hasattr(here, "info") and here.info.get("auth_user") {
-      auth_email = here.info["auth_user"]["email"];
+   # Find session in graph
+   all_sessions = [-->(`?Session)];
+   found_session = None;
+   for s in all_sessions {
+      if s.id == self.session_id {
+         found_session = s;
+         break;
+      }
    }
 
-   messages = db.get_all_messages_by_session(self.session_id);
-   session_stats = db.get_session_stats(self.session_id);
+   if found_session {
+      messages = [
+         {
+            "role": msg["role"],
+            "content": msg["content"]
+         }
+         for msg in found_session.chat_history
+      ];
 
-   report {
-      "session_id": self.session_id,
-      "messages": [
-            {
-               "role": msg["role"],
-               "content": msg["content"],
-               "timestamp": msg["timestamp"]
-            }
-            for msg in messages
-      ],
-      "stats": session_stats,
-      "total_messages": len(messages)
-   };
+      user_msgs = len([m for m in found_session.chat_history if m["role"] == "user"]);
+      assistant_msgs = len([m for m in found_session.chat_history if m["role"] == "assistant"]);
+      stats = {
+         "session_id": found_session.id,
+         "total_messages": len(found_session.chat_history),
+         "user_messages": user_msgs,
+         "assistant_messages": assistant_msgs,
+         "created_at": found_session.created_at,
+         "updated_at": found_session.updated_at
+      };
+
+      report {
+         "session_id": self.session_id,
+         "messages": messages,
+         "stats": stats,
+         "total_messages": len(messages)
+      };
+   } else {
+      report {
+         "session_id": self.session_id,
+         "messages": [],
+         "stats": {},
+         "total_messages": 0
+      };
+   }
 }
