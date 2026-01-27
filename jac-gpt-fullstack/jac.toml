@@ -7,17 +7,15 @@ entry-point = "main.jac"
 [dependencies]
 python-dotenv = ">=0.0.0"
 requests = ">=0.0.0"
-pymongo = ">=0.0.0"
 langchain-openai = ">=0.0.0"
 langchain-community = ">=0.0.0"
 langchain-chroma = ">=0.0.0"
 pypdf = ">=0.0.0"
 sentence-transformers = ">=0.0.0"
 faiss-cpu = ">=0.0.0"
-huggingface-hub = "0.34.0,<1.0"
 
 [dependencies.npm]
-jac-client-node = "1.0.3"
+jac-client-node = "1.0.4"
 react-markdown = "^9.0.0"
 rehype-highlight = "^7.0.0"
 "highlight.js" = "^11.9.0"
@@ -51,3 +49,17 @@ base_route_app = "app"
 app_name = "jac-gpt-test"
 namespace = "jac-gpt-test"
 
+# Jacpack metadata - used when packing, stripped from created projects
+[jacpack]
+name = "jac-gpt"
+description = "Jac GPT fullstack template with chat interface"
+jaclang = "0.9.0"
+
+[[jacpack.plugins]]
+name = "jac-client"
+version = "0.1.0"
+
+[jacpack.options]
+directories = [".jac"]
+gitignore_entries = ["*"]
+root_gitignore_entries = [".jac/"]

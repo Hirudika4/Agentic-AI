@@ -1,39 +1,41 @@
-# jac-gpt-client
+# jac-gpt
 
-A Jac client-side application with React support.
-
-## Project Structure
-
-```
-jac-gpt-client/
-├── jac.toml              # Project configuration
-├── main.jac              # Main application entry
-├── components/           # Reusable components
-│   └── Button.cl.jac     # Example Jac component
-├── assets/               # Static assets (images, fonts, etc.)
-└── build/                # Build output (generated)
-```
+A documentation assistant for Jac, built entirely in Jac.
 
 ## Getting Started
 
-Start the development server:
+1. Clone the repository:
+
+```bash
+git clone https://github.com/jaseci-labs/Agentic-AI.git
+cd Agentic-AI/jac-gpt-fullstack
+```
+
+2. Install dependencies:
+
+```bash
+jac add
+```
+
+3. Set environment variables:
+
+```bash
+export OPENAI_API_KEY=your_openai_api_key
+export MONGODB_URI=your_mongodb_connection_string
+```
+
+4. Start the application:
 
 ```bash
 jac start main.jac
 ```
 
-## Components
+## Project Structure
 
-Create Jac components in `components/` as `.cl.jac` files and import them:
-
-```jac
-cl import from .components.Button { Button }
 ```
-
-## Adding Dependencies
-
-Add npm packages with the --cl flag:
-
-```bash
-jac add --cl react-router-dom
+jac-gpt-fullstack/
+├── jac.toml              # Project configuration
+├── main.jac              # Main application entry
+├── components/           # Reusable components
+└── assets/               # Static assets
 ```
