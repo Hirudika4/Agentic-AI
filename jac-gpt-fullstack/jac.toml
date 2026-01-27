@@ -7,7 +7,6 @@ entry-point = "main.jac"
 [dependencies]
 python-dotenv = ">=0.0.0"
 requests = ">=0.0.0"
-pymongo = ">=0.0.0"
 langchain-openai = ">=0.0.0"
 langchain-community = ">=0.0.0"
 langchain-chroma = ">=0.0.0"
