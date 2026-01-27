@@ -104,6 +104,7 @@ def:pub JacMonacoBlock(code: str) -> any {
     editorRef = useRef(null);
     monacoRef = useRef(null);
     has themeApplied: bool = false;
+    has contentHeight: any = 400;  # Default height
 
     def handleCopy() -> None {
         navigator.clipboard.writeText(code);
@@ -111,7 +112,7 @@ def:pub JacMonacoBlock(code: str) -> any {
         setTimeout(lambda { copied = false; }, 2000);
     }
 
-    # Handle Monaco mount - load Jac syntax
+    # Handle Monaco mount - load Jac syntax and calculate height
     async def handleOnMount(editor: any, monaco: any) -> None {
         editorRef.current = editor;
         monacoRef.current = monaco;
@@ -127,23 +128,21 @@ def:pub JacMonacoBlock(code: str) -> any {
             # Apply Jaseci Orange theme
             await configureTheme(monaco, grammarConfig, true);
             
-            # Wait a bit for theme to apply - FIXED LINE
+            # Wait a bit for theme to apply
             await Reflect.construct(Promise, [lambda resolve: any { setTimeout(resolve, 200); }]);
             
-            themeApplied = true;
-            
-            # Force editor refresh
+            # Get Monaco's calculated content height
             if editorRef.current {
+                height = editorRef.current.getContentHeight();
+                contentHeight = height;
                 editorRef.current.updateOptions({ readOnly: true });
             }
             
-        }  except Exception as error{
+            themeApplied = true;
+            
+        } except Exception as error {
         }
     }
-
-    # Calculate height based on line count
-    lineCount = code.split("\n").length;
-    calculatedHeight = Math.max(80, Math.min(lineCount * 20 + 40, 500));
 
     copyLabel = "Copy code";
     copyColor = "gray";
@@ -185,7 +184,7 @@ def:pub JacMonacoBlock(code: str) -> any {
                 </Tooltip>
             </Group>
 
-            <Box style={{"height": f"{calculatedHeight}px"}}>
+            <Box style={{"height": f"{contentHeight}px"}}>
                 <Editor
                     height="100%"
                     width="100%"
@@ -212,9 +211,9 @@ def:pub JacMonacoBlock(code: str) -> any {
                         "lineNumbersMinChars": 3,
                         "overviewRulerBorder": false,
                         "scrollbar": {
-                            "vertical": "auto",
+                            "vertical": "hidden",
                             "horizontal": "auto",
-                            "verticalScrollbarSize": 8,
+                            "verticalScrollbarSize": 0,
                             "horizontalScrollbarSize": 8
                         },
                         "padding": { "top": 8, "bottom": 8 }
