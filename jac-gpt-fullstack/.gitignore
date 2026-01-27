@@ -24,3 +24,5 @@ node_modules/
 
 # Doc links json 
 !**/docs_links/*.json
+!assets/jac.tmLanguage.json
+!assets/language-configuration.json
