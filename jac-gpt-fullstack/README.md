@@ -21,7 +21,6 @@ jac add
 
 ```bash
 export OPENAI_API_KEY=your_openai_api_key
-export MONGODB_URI=your_mongodb_connection_string
 ```
 
 4. Start the application:
