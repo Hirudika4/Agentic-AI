@@ -7,7 +7,6 @@ entry-point = "main.jac"
 [dependencies]
 python-dotenv = ">=0.0.0"
 requests = ">=0.0.0"
-pymongo = ">=0.0.0"
 langchain-openai = ">=0.0.0"
 langchain-community = ">=0.0.0"
 langchain-chroma = ">=0.0.0"
@@ -28,6 +27,13 @@ tailwind-merge = "^2.2.0"
 "@emotion/react" = "^11.14.0"
 react-error-boundary = "latest"
 
+# Monaco Editor for Jac syntax highlighting
+"@monaco-editor/react" = "^4.6.0"
+monaco-editor = "^0.45.0"
+monaco-textmate = "^3.0.1"
+onigasm = "^2.2.5"
+monaco-editor-textmate = "^4.0.0"
+
 [dependencies.npm.dev]
 "@jac-client/dev-deps" = "1.0.0"
 
@@ -38,7 +44,6 @@ watchdog = ">=3.0.0"
 base_route_app = "app"
 
 [plugins.client]
-
 
 [plugins.scale.kubernetes]
 app_name = "jac-gpt-test"

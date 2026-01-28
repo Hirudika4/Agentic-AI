@@ -4,8 +4,8 @@ import json;
 import requests;
 import from byllm.lib {Model}
 import from dotenv {load_dotenv}
-import from services.database {get_database}
 import from services.rag_engine {RagEngine, load_config}
+import from datetime {datetime}
 
 with entry {
     load_dotenv(override=True);
@@ -194,8 +194,25 @@ walker :pub interact {
     }
 
     can init_session with `root entry {
-        visit [-->](`?Session)(?id == self.session_id) else {
-            session_node = here ++> Session(id=self.session_id, user_email=self.user_email, chat_history=[]);
+        all_sessions = [-->(`?Session)];
+        found_session = None;
+        for session in all_sessions {
+            if session.id == self.session_id {
+                found_session = session;
+                break;
+            }
+        }
+        if found_session {
+            visit found_session;
+        } else {
+            now = datetime.now().isoformat();
+            session_node = here ++> Session(
+                id=self.session_id,
+                user_email=self.user_email,
+                chat_history=[],
+                created_at=now,
+                updated_at=now
+            );
             print("Session Node Created for:", self.session_id, "User:", self.user_email);
             visit session_node;
         }
@@ -206,9 +223,21 @@ node Session {
     has id: str;
     has user_email: str = "";
     has chat_history: list[dict] = [];
-    has status: int = 1;
+    has status: str = "active";
+    has created_at: str = "";
+    has updated_at: str = "";
 
-    can chat with interact entry ;
+    can chat with interact entry;
+}
+
+node UserLocation {
+    has email: str;
+    has latitude: float = 0.0;
+    has longitude: float = 0.0;
+    has city: str = "";
+    has country: str = "";
+    has ip: str = "";
+    has updated_at: str = "";
 }
 
 walker :pub get_session {
@@ -237,18 +266,38 @@ walker get_session_stats {
     has session_id: str;
 
     can get_stats with `root entry {
-        db = get_database();
-        stats = db.get_session_stats(self.session_id);
-        report stats;
+        all_sessions = [-->(`?Session)];
+        for session in all_sessions {
+            if session.id == self.session_id {
+                user_msgs = len([m for m in session.chat_history if m["role"] == "user"]);
+                assistant_msgs = len([m for m in session.chat_history if m["role"] == "assistant"]);
+                report {
+                    "session_id": session.id,
+                    "total_messages": len(session.chat_history),
+                    "user_messages": user_msgs,
+                    "assistant_messages": assistant_msgs,
+                    "created_at": session.created_at,
+                    "updated_at": session.updated_at
+                };
+                return;
+            }
+        }
+        report {};
     }
 }
 
-walker close_session {
+walker :pub close_session {
     has session_id: str;
 
     can close_session_db with `root entry {
-        db = get_database();
-        db.close_session(self.session_id);
+        all_sessions = [-->(`?Session)];
+        for session in all_sessions {
+            if session.id == self.session_id {
+                session.status = "closed";
+                session.updated_at = datetime.now().isoformat();
+                break;
+            }
+        }
         report {
             "session_id": self.session_id,
             "status": "closed"
@@ -566,7 +615,10 @@ walker :pub suggest_docs {
         }
         
         # Sort by similarity (highest first)
-        similarities.sort(key=lambda x: float : x["similarity"], reverse=True);
+        def get_similarity(x: dict) -> float {
+            return x["similarity"];
+        }
+        similarities.sort(key=get_similarity, reverse=True);
         
         # Get top 3 suggestions
         top_suggestions = [];
