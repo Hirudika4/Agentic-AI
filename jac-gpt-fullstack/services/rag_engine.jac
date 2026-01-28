@@ -321,10 +321,8 @@ obj RagEngine {
 
             # Get original content if available (for enriched indexes)
             original_content = doc.metadata.get('original_content', chunk_txt);
-            print(chunk_txt);
             
             summary += f"{source} : {original_content}\n";
-            
         }
 
         print(f"\n{'='*60}\n");
