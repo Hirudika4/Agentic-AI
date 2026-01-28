@@ -241,7 +241,8 @@ obj RagEngine {
             for doc in docs_only {
                 # Use enriched content with metadata for reranking
                 enriched_content = self.enrich_content_with_metadata(doc);
-                pairs.append((query, enriched_content));
+                reranked_query = f"Query: {query}\n\nDoes this document contain specific information, examples, or explanations that directly answer the query above? Prioritize documents with concrete details, code examples, and clear explanations over general mentions.";
+                pairs.append((reranked_query, enriched_content));
             }
 
             # Get reranking scores
@@ -251,10 +252,10 @@ obj RagEngine {
             doc_score_pairs = list(zip(docs_only, scores));
 
             # Sort by score in descending order
-            doc_score_pairs = sorted(doc_score_pairs, key=lambda x: float: -x[1]);
+            results = sorted(doc_score_pairs, key=lambda x: float: -x[1]);
 
             # Filter to only include documents with score > 0.5
-            results = [(doc, float(score)) for (doc, score) in doc_score_pairs if score > 0.5];
+            # results = [(doc, float(score)) for (doc, score) in doc_score_pairs if score > 0.5];
 
             # Limit to top_n results
             if top_n is not None {
@@ -320,14 +321,10 @@ obj RagEngine {
 
             # Get original content if available (for enriched indexes)
             original_content = doc.metadata.get('original_content', chunk_txt);
-
-            # Handle display for different file types - include chunk id
-            if page is not None {
-                summary += f"[{id}] {source} page {page} (score: {score:.4f}): {original_content}\n";
-            } else {
-                # For markdown files without page numbers
-                summary += f"[{id}] {source} (score: {score:.4f}): {original_content}\n";
-            }
+            print(chunk_txt);
+            
+            summary += f"{source} : {original_content}\n";
+            
         }
 
         print(f"\n{'='*60}\n");
