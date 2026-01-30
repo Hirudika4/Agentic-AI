@@ -197,18 +197,23 @@ walker agent_executor {
         
         if not self.session_id {
             session_list = memory ++> Session();
-            self.session = session_list[0];
+            self.session = session_list[0];            
+            self.session.current_state["stage"] = WorkflowStage.PLANNING;
+            self.session.current_state["utterance"] = self.utterance;
+            self.session.current_state["revision_count"] = 0;
+            self.session.current_state["approved"] = False;
+
         } else {
             self.session = &(self.session_id);
         }
-
-        self.session.current_state["stage"] = WorkflowStage.PLANNING;
-        self.session.current_state["utterance"] = self.utterance;
         
         print(f"Starting workflow for: {self.utterance}");
 
-        visit [-->](`?Supervisor) else {
-            router_node = here ++> Supervisor();
+        supervisors = [root --> (`?Supervisor)];
+        if supervisors {
+            visit supervisors[0];
+        } else {
+            router_node = root ++> Supervisor();
             router_node ++> PlannerAgent();
             router_node ++> WriterAgent(); 
             router_node ++> ReviewAgent();
