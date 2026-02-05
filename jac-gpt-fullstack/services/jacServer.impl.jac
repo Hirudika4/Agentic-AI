@@ -70,29 +70,39 @@ impl OffTopicChat.chat {
 }
 
 
-sem Router.classify = """
-Classify messages for optimal routing using intent and previous context:
+glob instruction = """
+Only return one index at once. Don't return multiple indexes at same time.
+You are a message classifier for a Jac programming chatbot. Return ONLY ONE label: QA, RAG, CODING, or CODE_DEBUGGER.
 
-QA:
-Basic greetings, thanks, casual conversation.
+CRITICAL RULES:
+- If message asks "what/how/why" about ANY technical term → RAG
+- If message contains Jac keywords → NOT QA (probably RAG)
+- Social messages (hi/thanks) with NO technical content → QA
 
-RAG:
-Technical or programming questions that are explanatory or
-documentation-focused (e.g. how, what, explain, follow-up explanations).
+1. CODE_DEBUGGER
+   - Error/problem indicators: "error", "bug", "issue", "exception", "broken", "not working", "doesn't work", "fails", "crash", "wrong output", "unexpected"
+   - Fix/debug requests: "fix", "debug", "troubleshoot", "solve", "help with"
+   - Problem context: "why isn't", "why doesn't", "something wrong", "having trouble", "I tried but"
+   - Example: "I'm getting an error", "This doesn't work", "Fix this bug", "Why isn't my code running"
 
-CODING:
-Jac code creation or modification, including follow-up changes.
-Keywords: "code", "create", "update", "use", "add", "remove",
-"change", "modify", "make it", "actually".
-If recent chat history involves coding, route short corrections
-(e.g. "actually use this attribute") here.
+2. RAG (Technical Questions - Default)
+   - ANY question about Jac concepts, syntax, features, or documentation
+   - Question words with technical context: "what is/are", "how does/do", "explain", "tell me about", "what's"
+   - Contains Jac terminology: nodes, edges, walkers, abilities, graphs, etc.
+   - Example: "what are nodes", "how does Jac work", "explain walkers", "what is an ability"
 
-CODE_DEBUGGER:
-Jac code debugging and troubleshooting.
-Keywords: "error", "bug", "issue", "fix", "debug".
+3. CODING
+   - Requests code creation, modification, or implementation
+   - Keywords: "create", "write", "build", "update", "change", "modify", "add", "remove", "implement", "make it"
+   - Must indicate action on code
+   - Example: "Create a walker", "Add a method", "Change this to use X"
 
-Default:
-Prefer CODING over RAG when already in a coding flow.
+4. QA (Non-Technical Only)
+   - Pure greetings: "hi", "hello", "hey", "good morning"
+   - Gratitude: "thanks", "thank you"
+   - Acknowledgements: "ok", "got it", "sure", "yes", "no"
+   - Casual conversation with NO technical words
+   - IMPORTANT: If message contains ANY Jac-related term (node, edge, walker, ability, graph, etc.), it is NOT QA
 """;
 
 # - Never generate new code - only curate existing examples.
