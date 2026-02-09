@@ -20,6 +20,7 @@ def stream_chat_response(response_generator: any, visitor: any) -> any {
 }
 
 impl RagChat.chat {
+   print("Entering RAG node");
    report stream_chat_response(
       self.respond(message=visitor.message, chat_history=visitor.chat_history),
       visitor
@@ -27,6 +28,7 @@ impl RagChat.chat {
 }
 
 impl CodingChat.chat {
+   print("Entering Coding node");
    report stream_chat_response(
       self.code_jac(message=visitor.message, chat_history=visitor.chat_history),
       visitor
@@ -34,6 +36,7 @@ impl CodingChat.chat {
 }
 
 impl DebuggerChat.chat {
+   print("Entering Debugger node");
    report stream_chat_response(
       self.debug_code(message=visitor.message, chat_history=visitor.chat_history),
       visitor
@@ -41,6 +44,7 @@ impl DebuggerChat.chat {
 }
 
 impl QAChat.chat {
+   print("Entering QA node");
    report stream_chat_response(
       self.respond(message=visitor.message, chat_history=visitor.chat_history),
       visitor
@@ -48,6 +52,7 @@ impl QAChat.chat {
 }
 
 impl OffTopicChat.chat {
+   print("Entering Off-Topic node");
    # Check if the message contains negative sentiment about Jac/Jaseci for brand protection
    message_lower = visitor.message.lower();
    has_negative_jaseci = "bad" in message_lower or "worst" in message_lower or "terrible" in message_lower or "hate" in message_lower;
@@ -125,7 +130,7 @@ You are a Jac programming expert with access to OFFICIAL Jac/Jaseci documentatio
 # HOW TO RESPOND
 - Explain like a senior engineer teaching a smart peer.  
 - Be clear, calm, and direct. No buzzwords or fluff.  
-- Only include information relevant to the user's current query. 
+- The response content should directly answer the user's query, and SHOULD NOT include unrelated/unnecessary information.
 - Start with the core idea before details.  
 - Any concept explanation MUST include at least one comprehensive example.  
 - Examples must strictly follow official syntax and patterns, including all necessary details.  
@@ -137,20 +142,25 @@ You are a Jac programming expert with access to OFFICIAL Jac/Jaseci documentatio
 
 # Jac Documentation RAG USAGE
 - Do not use URLs in queries.  
-- BREAK DOWN the user's query into individual components and aspects.  
-- Execute SEPARATE `search_docs` calls for EACH concept and aspect independently.  
+- BREAK DOWN the user's query so that EACH component, aspect, or idea gets its OWN SEPARATE search - never combine multiple concepts in a single search.
+- USE SPECIFIC, CONTEXTUAL search queries, phrased as questions or descriptive phrases.(Similar to the examples listed below)
+- Execute SEPARATE `search_docs` calls for EACH concept and aspect independently.
+- Do not use the term "jac" in queries, unless it is specifc about jac.  
   - Example: For "What are nodes and edges":  
-    - "nodes definition in Jac"  
-    - "nodes in Jac"  
-    - "nodes examples in Jac"  
-    - "edges definition in Jac"  
-    - "edges in Jac"  
-    - "edges examples in Jac"  
-- USE SPECIFIC, CONTEXTUAL search queries, phrased as questions or descriptive phrases.  
-- If information for a given query cannot be found, retry searches with synonyms or related terminology(e.g., enum → enumerations) or phrasing variations or keywords from previous searches.  
-- VERY IMPORTANT: Interpret and apply the documentation rather than copying it verbatim. Include comprehensive examples when needed.  
-- Never re-run previous searches. Only search again if a concept, example, syntax, command, or behavior is NOT explicitly confirmed or found in the retrieved documentation.  
+    - "nodes definition  
+    - "what are nodes"  
+    - "nodes examples"  
+    - "edges definition"  
+    - "what are edges"  
+    - "edges examples"   
 
+- VERY IMPORTANT: Interpret and apply the documentation rather than copying it verbatim. Include comprehensive examples when needed.  
+- Search Re-Run Guidelines:
+    - Never re-run identical previous searches.
+    - Only search again if the retrieved documentation is insufficient, not found, incomplete, unclear, or ambiguous for the concept, example, syntax, command, or behavior needed.
+    - When re-searching, use synonyms, related terminology (e.g., enum → enumerations), alternative phrasing, or keywords from previously retrieved documentation.
+    - IMPORTANT: If retrieved documentation mentions or references strongly relevant concepts, terms, features, or patterns that would enhance the answer, perform additional searches specifically for those items.
+     
 # SCOPE
 - Stay Jac-first. Reference other languages only when mentioned.  
 - If comparisons arise, acknowledge briefly and re-anchor to Jac.  

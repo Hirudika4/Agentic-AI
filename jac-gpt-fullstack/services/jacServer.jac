@@ -73,8 +73,8 @@ node RagChat {
 
     def respond(message: str, chat_history: list[dict]) -> str by llm(
         method="ReAct",
-        messages=chat_history,
         max_react_iterations=5,
+        temperature=0.5,
         stream = True,
         tools = [search_docs]
     );

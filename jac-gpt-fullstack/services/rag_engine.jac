@@ -197,10 +197,21 @@ obj RagEngine {
 
     def create_faiss_index(chunks: list[Document]) {
         if len(chunks) > 0 {
-            print(f"Creating FAISS index with {len(chunks)} chunks (with metadata enrichment)");
-            chunks = self.add_chunk_id(chunks);
+            # Filter out release notes
+            filtered_chunks = [
+                chunk for chunk in chunks 
+                if "release_notes" not in chunk.metadata.get('source', '').lower()
+            ];
+            
+            if len(filtered_chunks) == 0 {
+                print("No documents to index after filtering");
+                return;
+            }
+            
+            print(f"Creating FAISS index with {len(filtered_chunks)} chunks (with metadata enrichment)");
+            filtered_chunks = self.add_chunk_id(filtered_chunks);
             self.vectorstore = FAISS.from_documents(
-                chunks,
+                filtered_chunks,
                 self.get_embedding_function()
             );
             self.vectorstore.save_local(self.faiss_path);
@@ -236,14 +247,14 @@ obj RagEngine {
             # Extract documents and prepare query-document pairs
             docs_only = [doc for (doc, _) in documents];
 
-            reranked_query = """Query: ${query}
-                    Evaluate how well this document directly answers the query.
-                    Rank higher if it contains specific, relevant information that satisfies the query intent, such as clear explanations, correct syntax, concrete details, or code examples when appropriate.
-                    Rank lower if it only mentions related concepts, is overly general, or does not meaningfully address the query.
-                    Focus on semantic relevance and answer completeness rather than keyword overlap.""";
+            # reranked_query = """Query: ${query}
+            #         Evaluate how well this document directly answers the query.
+            #         Rank higher if it contains specific, relevant information that satisfies the query intent, such as clear explanations, correct syntax, concrete details, or code examples when appropriate.
+            #         Rank lower if it only mentions related concepts, is overly general, or does not meaningfully address the query.
+            #         Focus on semantic relevance and answer completeness rather than keyword overlap.""";
                 
             pairs = [
-                (reranked_query, doc.metadata.get('original_content', doc.page_content))
+                (query, doc.metadata.get('original_content', doc.page_content))
                 for doc in docs_only
             ];
 
@@ -330,7 +341,7 @@ obj RagEngine {
             # Get original content if available (for enriched indexes)
             original_content = doc.metadata.get('original_content', chunk_txt);
             
-            summary += f"{source} : {original_content}\n";
+            summary += f"{source} (Relevance Score: {score:.4f}) : {original_content}\n";
         }
 
         print(f"\n{'='*60}\n");
