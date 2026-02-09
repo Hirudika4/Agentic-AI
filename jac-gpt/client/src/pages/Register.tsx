@@ -19,7 +19,7 @@ interface LocationData {
 const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    username: '',
     password: '',
     confirmPassword: '',
   });
@@ -123,7 +123,7 @@ const Register = () => {
 
     try {
       // Include location data in registration
-      await register(formData.email, formData.password, formData.name, location);
+      await register(formData.username, formData.password, formData.name, location);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during registration');
@@ -193,13 +193,13 @@ const Register = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="username" className="text-gray-300">Email</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
+                id="username"
+                name="username"
+                type="username"
+                placeholder="Enter your username"
+                value={formData.username}
                 onChange={handleChange}
                 required
                 disabled={isLoading}

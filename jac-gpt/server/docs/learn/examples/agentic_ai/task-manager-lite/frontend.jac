@@ -7,7 +7,7 @@ def bootstrap_frontend(token: str) {
     );
 
     st.title("📋 Task Manager Lite - AI Assistant");
-    st.markdown("✨ Intelligent task management, email writing, and general chat");
+    st.markdown("✨ Intelligent task management, username writing, and general chat");
 
     # Initialize session state
     if "task_results" not in st.session_state {
@@ -30,11 +30,11 @@ def bootstrap_frontend(token: str) {
             st.session_state.user_input = "Summarize all my tasks";
         }
         st.markdown("**📧 Email Writing**");
-        if st.button("✉️ Write a meeting email") {
-            st.session_state.user_input = "Write an email to schedule a meeting with my team for next Friday";
+        if st.button("✉️ Write a meeting username") {
+            st.session_state.user_input = "Write an username to schedule a meeting with my team for next Friday";
         }
-        if st.button("📬 Write follow-up email") {
-            st.session_state.user_input = "Write a follow-up email for the project update";
+        if st.button("📬 Write follow-up username") {
+            st.session_state.user_input = "Write a follow-up username for the project update";
         }
         st.markdown("**💬 General Chat**");
         if st.button("🤔 Ask a question") {
@@ -173,7 +173,7 @@ glob INSTANCE_URL = "http://localhost:8000",
      TEST_USER_PASSWORD = "password",
      response = requests.post(
          f"{INSTANCE_URL}/user/login",
-         json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+         json={"username": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
      );
 
 with entry {
@@ -181,12 +181,12 @@ with entry {
         # Try registering the user if login fails
         response = requests.post(
             f"{INSTANCE_URL}/user/register",
-            json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+            json={"username": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
         );
         assert response.status_code == 201;
         response = requests.post(
             f"{INSTANCE_URL}/user/login",
-            json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+            json={"username": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
         );
         assert response.status_code == 200;
     }

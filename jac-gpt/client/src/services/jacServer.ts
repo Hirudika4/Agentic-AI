@@ -41,8 +41,8 @@ class JacServerService {
   }
 
   // Authenticate with the JAC server (fallback method)
-  async authenticate(email?: string, password?: string): Promise<string> {
-    const authEmail = email || this.defaultEmail;
+  async authenticate(username?: string, password?: string): Promise<string> {
+    const authEmail = username || this.defaultEmail;
     const authPassword = password || this.defaultPassword;
     
     try {
@@ -52,7 +52,7 @@ class JacServerService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: authEmail, password: authPassword }),
+        body: JSON.stringify({ username: authEmail, password: authPassword }),
       });
 
       // If login fails, try to register
@@ -62,7 +62,7 @@ class JacServerService {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email: authEmail, password: authPassword }),
+          body: JSON.stringify({ username: authEmail, password: authPassword }),
         });
 
         // Login after registration
@@ -71,7 +71,7 @@ class JacServerService {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email: authEmail, password: authPassword }),
+          body: JSON.stringify({ username: authEmail, password: authPassword }),
         });
       }
 
@@ -186,7 +186,7 @@ class JacServerService {
         session_id: sessionId,
       };
 
-      // Include user email if provided
+      // Include user username if provided
       if (userEmail) {
         requestBody.user_email = userEmail;
       }

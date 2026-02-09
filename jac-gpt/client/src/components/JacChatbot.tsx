@@ -133,7 +133,7 @@ const JacChatbot = () => {
     }
 
     try {
-      const userEmail = user?.email || '';
+      const userEmail = user?.username || '';
       const response = await jacServerService.sendMessage(message, sessionId, userEmail);
       
       const botMessage: Message = {

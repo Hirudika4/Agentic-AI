@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [username, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -24,12 +24,12 @@ const ForgotPassword = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ username }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to send reset email');
+        throw new Error(errorData.message || 'Failed to send reset username');
       }
 
       setIsSuccess(true);
@@ -48,15 +48,15 @@ const ForgotPassword = () => {
             <div className="flex justify-center mb-4">
               <img src="/logo.png" alt="JAC GPT" className="h-12 w-12" />
             </div>
-            <CardTitle className="text-2xl text-center text-white">Check your email</CardTitle>
+            <CardTitle className="text-2xl text-center text-white">Check your username</CardTitle>
             <CardDescription className="text-center text-gray-400">
-              We've sent a password reset link to {email}
+              We've sent a password reset link to {username}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Alert>
               <AlertDescription>
-                If you don't see the email in your inbox, please check your spam folder.
+                If you don't see the username in your inbox, please check your spam folder.
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -82,7 +82,7 @@ const ForgotPassword = () => {
           </div>
           <CardTitle className="text-2xl text-center text-white">Forgot password?</CardTitle>
           <CardDescription className="text-center text-gray-400">
-            Enter your email and we'll send you a reset link
+            Enter your username and we'll send you a reset link
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -93,12 +93,12 @@ const ForgotPassword = () => {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="username" className="text-gray-300">Email</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}

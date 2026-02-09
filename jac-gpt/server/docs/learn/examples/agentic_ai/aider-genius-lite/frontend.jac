@@ -140,7 +140,7 @@ glob INSTANCE_URL = "http://localhost:8000",
      TEST_USER_PASSWORD = "password",
      response = requests.post(
          f"{INSTANCE_URL}/user/login",
-         json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+         json={"username": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
      );
 
 with entry {
@@ -148,12 +148,12 @@ with entry {
         # Try registering the user if login fails
         response = requests.post(
             f"{INSTANCE_URL}/user/register",
-            json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+            json={"username": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
         );
         assert response.status_code == 201;
         response = requests.post(
             f"{INSTANCE_URL}/user/login",
-            json={"email": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
+            json={"username": TEST_USER_EMAIL, "password": TEST_USER_PASSWORD}
         );
         assert response.status_code == 200;
     }

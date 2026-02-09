@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Users, MessageSquare, Calendar, Eye, EyeOff, LogOut, HelpCircle } from 'lucide-react';
 
 interface User {
-  email: string;
+  username: string;
   name: string;
   role: string;
   created_at: string;
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log('🔍 Fetching users with requester_email:', user?.email);
+      console.log('🔍 Fetching users with requester_email:', user?.username);
       console.log('🔍 API URL:', import.meta.env.VITE_API_URL || 'http://localhost:8080');
       
       // Get auth token for headers
@@ -91,7 +91,7 @@ const AdminDashboard = () => {
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/walker/get_all_users`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ requester_email: user?.email }),
+        body: JSON.stringify({ requester_email: user?.username }),
       });
 
       console.log('🔍 Users API response status:', response.status);
@@ -123,7 +123,7 @@ const AdminDashboard = () => {
 
   const fetchSessions = async () => {
     try {
-      console.log('🔍 Fetching sessions with requester_email:', user?.email);
+      console.log('🔍 Fetching sessions with requester_email:', user?.username);
       
       // Get auth token for headers
       const token = localStorage.getItem('auth_token');
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/walker/get_all_sessions_admin`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ requester_email: user?.email }),
+        body: JSON.stringify({ requester_email: user?.username }),
       });
 
       console.log('🔍 Sessions API response status:', response.status);
@@ -191,7 +191,7 @@ const AdminDashboard = () => {
         headers,
         body: JSON.stringify({ 
           session_id: sessionId,
-          requester_email: user?.email 
+          requester_email: user?.username 
         }),
       });
 
@@ -235,7 +235,7 @@ const AdminDashboard = () => {
             headers,
             body: JSON.stringify({ 
               session_id: session.session_id,
-              requester_email: user?.email 
+              requester_email: user?.username 
             }),
           });
 
@@ -247,7 +247,7 @@ const AdminDashboard = () => {
             const userMessages = sessionMessages.filter((msg: Message) => msg.role === 'user');
             
             // Find user name from users array
-            const sessionUser = users.find(u => u.email === session.user_email);
+            const sessionUser = users.find(u => u.username === session.user_email);
             
             userMessages.forEach((msg: Message) => {
               questions.push({
@@ -347,7 +347,7 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
             <p className="text-gray-600">
-              Welcome, {user.name || user.email}. Monitor all user activity and chat sessions.
+              Welcome, {user.name || user.username}. Monitor all user activity and chat sessions.
             </p>
           </div>
           <Button
@@ -456,7 +456,7 @@ const AdminDashboard = () => {
                   <div key={index} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <span className="font-medium text-gray-900">{user.email}</span>
+                        <span className="font-medium text-gray-900">{user.username}</span>
                         <Badge 
                           variant={user.role === 'admin' ? 'default' : 'secondary'}
                           className={user.role === 'admin' ? 'bg-orange-500 hover:bg-orange-600' : ''}

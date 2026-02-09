@@ -3,7 +3,7 @@ node Teacher {
     has name: str,
         subject: str,
         years_experience: int,
-        email: str;
+        username: str;
 }
 
 # Basic node for representing students
@@ -125,7 +125,7 @@ glob science_lab = root ++> Classroom(
          name="Dr. Smith",
          subject="Chemistry",
          years_experience=12,
-         email="smith@school.edu"
+         username="smith@school.edu"
      ),
      students = [
          ("Charlie", 17, 11, "S003"),

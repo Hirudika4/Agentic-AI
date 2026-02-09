@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [username, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
@@ -23,7 +23,7 @@ const Login = () => {
     setError('');
 
     try {
-      await login(email, password);
+      await login(username, password);
       navigate(from, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
@@ -50,12 +50,12 @@ const Login = () => {
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-300">Email</Label>
+              <Label htmlFor="username" className="text-gray-300">Email</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
+                id="username"
+                type="username"
+                placeholder="Enter your username"
+                value={username}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}

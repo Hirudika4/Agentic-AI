@@ -256,7 +256,7 @@ walker close_session {
 
 # Admin walkers
 walker get_user_profile {
-    has email: str;
+    has username: str;
 
     obj __specs__ {
         static has methods: list = ["post"];
@@ -267,7 +267,7 @@ walker get_user_profile {
 }
 
 walker create_user_profile {
-    has email: str;
+    has username: str;
     has name: str = "";
 
     obj __specs__ {
@@ -279,7 +279,7 @@ walker create_user_profile {
 }
 
 walker save_user_location {
-    has email: str;
+    has username: str;
     has location: dict = {};
 
     obj __specs__ {
@@ -325,7 +325,7 @@ walker get_session_messages_admin {
 }
 
 # walker get_user_info {
-#     has email: str;
+#     has username: str;
 #     has requester_email: str = "";
 
 #     can get_user_details with `root entry;

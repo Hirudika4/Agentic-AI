@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 interface User {
   id: string;
-  email: string;
+  username: string;
   name?: string;
   role?: string;
 }
@@ -17,8 +17,8 @@ interface LocationData {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name?: string, location?: LocationData | null) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string, name?: string, location?: LocationData | null) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ email: parsedUser.email }),
+              body: JSON.stringify({ username: parsedUser.username }),
             });
             
             if (profileResponse.ok) {
@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkExistingAuth();
   }, []);
 
-    const login = async (email: string, password: string) => {
+    const login = async (username: string, password: string) => {
     setIsLoading(true);
     try {
       let response;
@@ -126,7 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ username, password }),
         });
 
         if (response.ok) {
@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ username }),
               });
               
               if (profileResponse.ok) {
@@ -161,16 +161,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 if (profileData.reports && profileData.reports[0] && profileData.reports[0].user) {
                   const userProfile = profileData.reports[0].user;
                   userData = {
-                    id: userProfile.id || email,
-                    email: userProfile.email,
+                    id: userProfile.id || username,
+                    username: userProfile.username || username,
                     name: userProfile.name || '',
                     role: userProfile.role || 'user',
                   };
                 } else {
                   // Fallback if no user profile found
                   userData = {
-                    id: email,
-                    email: email,
+                    id: username,
+                    username: username,
                     name: '',
                     role: 'user',
                   };
@@ -178,8 +178,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               } else {
                 // Fallback if profile fetch fails
                 userData = {
-                  id: email,
-                  email: email,
+                  id: username,
+                  username: username,
                   name: '',
                   role: 'user',
                 };
@@ -188,8 +188,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               console.error('Error fetching user profile:', profileError);
               // Use basic user data if profile fetch fails
               userData = {
-                id: email,
-                email: email,
+                id: username,
+                username: username,
                 name: '',
                 role: 'user',
               };
@@ -218,12 +218,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };  const register = async (email: string, password: string, name?: string, location?: LocationData | null) => {
+  };  const register = async (username: string, password: string, name?: string, location?: LocationData | null) => {
     setIsLoading(true);
     try {
       // Prepare registration data with location if available
       const registrationData = {
-        email,
+        username,
         password,
         name: name || '',
         ...(location && {
@@ -264,7 +264,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ 
-                email, 
+                username, 
                 location: {
                   latitude: location.latitude,
                   longitude: location.longitude,
@@ -279,7 +279,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
         
-        await login(email, password);
+        await login(username, password);
         return;
       }
 
@@ -294,7 +294,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ 
-                email, 
+                username, 
                 location: {
                   latitude: location.latitude,
                   longitude: location.longitude,
@@ -309,7 +309,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
         
-        await login(email, password);
+        await login(username, password);
         return;
       }
 
@@ -324,7 +324,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ 
-                email, 
+                username, 
                 location: {
                   latitude: location.latitude,
                   longitude: location.longitude,
@@ -341,7 +341,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         const userData: User = {
           id: data.user.id,
-          email: data.user.email,
+          username: data.user.username || username,
           name: data.user.name || name || '',
           role: data.user.is_admin ? 'admin' : 'user',
         };
@@ -354,7 +354,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         resetMessageCount();
       } else {
         // Fallback: try to login after registration
-        await login(email, password);
+        await login(username, password);
       }
     } catch (error) {
       console.error('Registration error:', error);

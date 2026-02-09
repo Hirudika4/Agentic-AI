@@ -39,12 +39,12 @@ const Sidebar = ({ isOpen, onToggle, onNewChat, chatSessions = [], currentSessio
     logout();
   };
 
-  const getUserInitials = (name?: string, email?: string) => {
+  const getUserInitials = (name?: string, username?: string) => {
     if (name) {
       return name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2);
     }
-    if (email) {
-      return email[0].toUpperCase();
+    if (username) {
+      return username[0].toUpperCase();
     }
     return 'U';
   };
@@ -200,16 +200,16 @@ const Sidebar = ({ isOpen, onToggle, onNewChat, chatSessions = [], currentSessio
                     <Avatar className="w-6 h-6">
                       <AvatarImage src="" />
                       <AvatarFallback className="text-xs bg-orange-500 text-white">
-                        {getUserInitials(user.name, user.email)}
+                        {getUserInitials(user.name, user.username)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start flex-1 min-w-0">
                       <span className="text-sm font-medium truncate">
-                        {user.name || user.email}
+                        {user.name || user.username}
                       </span>
                       {user.name && (
                         <span className="text-xs text-gray-400 truncate">
-                          {user.email}
+                          {user.username}
                         </span>
                       )}
                     </div>
@@ -264,12 +264,12 @@ const Sidebar = ({ isOpen, onToggle, onNewChat, chatSessions = [], currentSessio
                   <Button 
                     variant="ghost" 
                     className="w-full px-2 py-2 text-gray-300 hover:text-white hover:bg-gray-800"
-                    title={user.name || user.email}
+                    title={user.name || user.username}
                   >
                     <Avatar className="w-6 h-6">
                       <AvatarImage src="" />
                       <AvatarFallback className="text-xs bg-orange-500 text-white">
-                        {getUserInitials(user.name, user.email)}
+                        {getUserInitials(user.name, user.username)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -277,10 +277,10 @@ const Sidebar = ({ isOpen, onToggle, onNewChat, chatSessions = [], currentSessio
                 <DropdownMenuContent className="w-56" align="start" side="right">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
-                      <span>{user.name || user.email}</span>
+                      <span>{user.name || user.username}</span>
                       {user.name && (
                         <span className="text-xs text-gray-400 font-normal">
-                          {user.email}
+                          {user.username}
                         </span>
                       )}
                     </div>
