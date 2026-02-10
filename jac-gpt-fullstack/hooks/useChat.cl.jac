@@ -15,6 +15,7 @@ def:pub useChat() -> any {
     has chatSessions: list = [];
     has docSuggestions: list = [];
     has lastUserMessage: str = "";
+    has isSearchingDocs: bool = False;
 
     messagesEndRef = useRef(None);
     firstChunkRef = useRef(False);
@@ -127,19 +128,6 @@ def:pub useChat() -> any {
             };
             messages = lambda prev: any -> any { return prev.concat([botMessage]); };
 
-            # Handle suggestions independently (fire and forget)
-            # async def handleSuggestions() -> None {
-            #     try {
-            #         suggestResult = await getSuggestions(content.trim(), []);
-            #         if suggestResult.success and suggestResult.suggestions {
-            #             docSuggestions = suggestResult.suggestions;
-            #         }
-            #     } except Exception as e {
-            #         console.error("Error fetching suggestions:", e);
-            #     }
-            # }
-            # handleSuggestions();
-
             # SSE chunk handler - updates message content for each chunk
             userMessageContent = content.trim();  # Store user message for filtering
             firstChunkRef.current = False;  # Reset for this message
@@ -175,6 +163,25 @@ def:pub useChat() -> any {
                 };
             }
 
+            # Handle suggestions independently (fire and forget)
+            async def handleSuggestions() -> None {
+                isSearchingDocs = True;
+                try {
+                    suggestResult = await getSuggestions(content.trim(), []);
+                    if suggestResult.success and suggestResult.suggestions {
+                        docSuggestions = suggestResult.suggestions;
+                    }
+                } except Exception as e {
+                    console.error("Error fetching suggestions:", e);
+                } finally {
+                    # Keep animation for 2 more seconds after fetching
+                    setTimeout(lambda -> None {
+                        isSearchingDocs = False;
+                    }, 3000);
+                }
+            }
+            handleSuggestions();
+            
             # Wait for SSE streaming to complete
             result = await sendMessage(content.trim(), sessionId, userEmail, onChunk);
 
@@ -322,6 +329,7 @@ def:pub useChat() -> any {
         "chatSessions": chatSessions,
         "docSuggestions": docSuggestions,
         "lastUserMessage": lastUserMessage,
+        "isSearchingDocs": isSearchingDocs,
         "messagesEndRef": messagesEndRef,
         "canSendMessage": canSendMessage,
         "handleSendMessage": handleSendMessage,
