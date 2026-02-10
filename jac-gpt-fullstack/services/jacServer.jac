@@ -1,6 +1,8 @@
 import sys;
 import os;
 import json;
+import numpy as np;
+import from sentence_transformers {SentenceTransformer}
 import requests;
 import from byllm.lib {Model}
 import from dotenv {load_dotenv}
@@ -21,7 +23,8 @@ glob docs_path: str = os.path.join(services_dir, app_config.get("paths", {}).get
 glob faiss_path: str = os.path.join(services_dir, app_config.get("paths", {}).get("faiss_path", "faiss_index"));
 
 glob llm = Model(model_name="gpt-4.1-mini");
-
+glob embedding_model = SentenceTransformer('all-MiniLM-L6-v2');
+        
 glob rag_engine: RagEngine = RagEngine(
     file_path=docs_path,
     faiss_path=faiss_path,
@@ -520,10 +523,6 @@ walker :pub suggest_docs {
     }
 
     can get_suggestions with `root entry {
-        import json;
-        import os;
-        import numpy as np;
-        import from sentence_transformers {SentenceTransformer}
         
         # Load section-level documentation links with embeddings
         section_links = [];
@@ -543,11 +542,8 @@ walker :pub suggest_docs {
             return;
         }
         
-        # Load embedding model
-        model = SentenceTransformer('all-MiniLM-L6-v2');
-        
         # Generate embedding for the user's message
-        message_embedding = model.encode(self.message);
+        message_embedding = embedding_model.encode(self.message,  show_progress_bar=False);
         
         # Calculate cosine similarity with each documentation title
         similarities = [];
