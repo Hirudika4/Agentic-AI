@@ -120,12 +120,19 @@ def:pub AdminDashboard() -> any {
                 return;
             }
 
+            # Filter to only sessions with messages
+            sessionsWithMessages = sessions.filter(lambda s: any -> any {
+                return (s.message_count or 0) > 0;
+            });
+
             questionsLoading = True;
             questions = [];
+            console.log("Loading questions from", sessionsWithMessages.length, "sessions");
 
-            for session in sessions {
+            for session in sessionsWithMessages {
                 try {
                     result = await getSessionMessagesAdmin(session.session_id, username);
+                    console.log("Session", session.session_id, "messages:", result.messages.length if result.messages else 0);
                     if result.success and result.messages {
                         sessionUser = None;
                         for u in users {
@@ -271,13 +278,18 @@ def:pub AdminDashboard() -> any {
         </Box>;
     }
 
+    # Filter out empty sessions (created on page load but never used)
+    activeSessions_list = sessions.filter(lambda s: any -> any {
+        return (s.message_count or 0) > 0;
+    });
+
     # --- Compute stats ---
     totalMessages = 0;
     activeSessions = 0;
     adminCount = 0;
     userCount = 0;
 
-    for s in sessions {
+    for s in activeSessions_list {
         totalMessages = totalMessages + (s.message_count or 0);
         if s.status == "active" {
             activeSessions = activeSessions + 1;
@@ -317,7 +329,7 @@ def:pub AdminDashboard() -> any {
                     <Text size="sm" fw={500} c={MUTED}>Total Sessions</Text>
                     <IconMessageCircle size={20} color="#3b82f6" />
                 </Group>
-                <Text size="xl" fw={700} c={TEXT} style={{"fontSize": "32px"}}>{sessions.length}</Text>
+                <Text size="xl" fw={700} c={TEXT} style={{"fontSize": "32px"}}>{activeSessions_list.length}</Text>
                 <Text size="xs" c={MUTED2} mt="xs">
                     {String(activeSessions)}{" active session(s)"}
                 </Text>
@@ -412,7 +424,7 @@ def:pub AdminDashboard() -> any {
             </Box>
             <ScrollArea style={{"height": "500px"}} p="md">
                 <Stack gap="xs">
-                    {sessions.map(lambda s: any, index: int -> any {
+                    {activeSessions_list.map(lambda s: any, index: int -> any {
                         isSelected = selectedSession and selectedSession.session_id == s.session_id;
                         return <Box
                             key={index}
@@ -778,7 +790,7 @@ def:pub AdminDashboard() -> any {
                         }
                     }}
                 >
-                    {"Sessions ("}{String(sessions.length)}{")"}
+                    {"Sessions ("}{String(activeSessions_list.length)}{")"}
                 </Button>
                 <Button
                     onClick={lambda -> None { activeTab = "questions"; }}

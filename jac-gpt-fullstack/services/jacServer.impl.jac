@@ -235,7 +235,12 @@ impl Session.chat {
    if visitor.user_email and not self.user_email {
       self.user_email = visitor.user_email;
    }
-   visitor.chat_history = self.chat_history;  
+
+   # Save user message to chat history
+   self.chat_history.append({"role": "user", "content": visitor.message});
+   self.updated_at = datetime.now().isoformat();
+
+   visitor.chat_history = self.chat_history;
 
    visit [-->](`?Router) else {
          router_node = root ++> Router();
