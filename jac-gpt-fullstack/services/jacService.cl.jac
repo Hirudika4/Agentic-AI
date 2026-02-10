@@ -183,6 +183,74 @@ async def:pub getUserProfile(email: str) -> any {
     }
 }
 
+"""Get all users (admin)."""
+async def:pub getAllUsers(requesterEmail: str = "") -> any {
+    try {
+        response = root spawn get_all_users(requester_email=requesterEmail);
+        result = response.reports[response.reports.length - 1] if response.reports and response.reports.length > 0 else {};
+
+        return {
+            "success": True,
+            "users": result.users or [],
+            "total": result.total or 0
+        };
+    } except Exception as e {
+        console.error("getAllUsers error:", e);
+        return {
+            "success": False,
+            "error": String(e),
+            "users": [],
+            "total": 0
+        };
+    }
+}
+
+"""Get all sessions (admin)."""
+async def:pub getAllSessionsAdmin(requesterEmail: str = "") -> any {
+    try {
+        response = root spawn get_all_sessions_admin(requester_email=requesterEmail);
+        result = response.reports[response.reports.length - 1] if response.reports and response.reports.length > 0 else {};
+
+        return {
+            "success": True,
+            "sessions": result.sessions or [],
+            "total": result.total or 0
+        };
+    } except Exception as e {
+        console.error("getAllSessionsAdmin error:", e);
+        return {
+            "success": False,
+            "error": String(e),
+            "sessions": [],
+            "total": 0
+        };
+    }
+}
+
+"""Get session messages (admin)."""
+async def:pub getSessionMessagesAdmin(sessionId: str, requesterEmail: str = "") -> any {
+    try {
+        response = root spawn get_session_messages_admin(session_id=sessionId, requester_email=requesterEmail);
+        result = response.reports[response.reports.length - 1] if response.reports and response.reports.length > 0 else {};
+
+        return {
+            "success": True,
+            "session_id": result.session_id or sessionId,
+            "messages": result.messages or [],
+            "stats": result.stats or {},
+            "total_messages": result.total_messages or 0
+        };
+    } except Exception as e {
+        console.error("getSessionMessagesAdmin error:", e);
+        return {
+            "success": False,
+            "error": String(e),
+            "messages": [],
+            "total_messages": 0
+        };
+    }
+}
+
 """Get documentation content from URL."""
 async def:pub getDocContent(url: str) -> any {
     try {

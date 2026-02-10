@@ -1,4 +1,4 @@
-import from react { useState }
+import from react { useState, useEffect }
 import from "@jac/runtime" { Link, jacIsLoggedIn, jacLogout, useNavigate }
 import from "@mantine/core" {
     Box,
@@ -25,9 +25,11 @@ import from "@tabler/icons-react" {
     IconLogout,
     IconUserPlus,
     IconLogin,
-    IconMessage
+    IconMessage,
+    IconShieldCheck
 }
 import from ..hooks.useAuth { getUsernameFromToken }
+import from ..services.jacService { getUserProfile }
 
 """Sidebar with chat history, new chat button, and user actions."""
 def:pub Sidebar(
@@ -49,10 +51,28 @@ def:pub Sidebar(
 
     # --- Local UI state ---
     has isExpanded: bool = True;
+    has isAdmin: bool = False;
 
     navigate = useNavigate();
     isAuthenticated = jacIsLoggedIn();
     username = getUsernameFromToken();
+
+    # Check admin status
+    useEffect(lambda -> None {
+        async def checkAdmin() -> None {
+            if isAuthenticated and username and username != "Guest" {
+                try {
+                    result = await getUserProfile(username);
+                    if result.isAdmin {
+                        isAdmin = True;
+                    }
+                } except Exception as e {
+                    console.error("Admin check error:", e);
+                }
+            }
+        }
+        checkAdmin();
+    }, [isAuthenticated]);
 
     # --- Theme tokens (React-like dark + orange) ---
     BG = "#141414";
@@ -365,6 +385,22 @@ def:pub Sidebar(
                     <Text size="sm" fw={600} c={TEXT} style={{"flex": "1"}}>{username}</Text>
                 </Group>
 
+                {(
+                    <Button
+                        onClick={lambda -> None { navigate("/admin"); }}
+                        variant="subtle"
+                        fullWidth
+                        size="xs"
+                        leftSection={<IconShieldCheck size={14} />}
+                        mb="xs"
+                        style={{"color": ORANGE}}
+                    >
+                        Admin Dashboard
+                    </Button>
+                    if isAdmin
+                    else None
+                )}
+
                 <Button
                     onClick={handleLogout}
                     variant="subtle"
@@ -449,6 +485,21 @@ def:pub Sidebar(
     if not isExpanded {
         if isAuthenticated {
             collapsedAuthSection = <Stack gap="xs" align="center" px="xs" pt="sm">
+                {(
+                    <Tooltip label="Admin Dashboard" position="right">
+                        <ActionIcon
+                            onClick={lambda -> None { navigate("/admin"); }}
+                            variant="subtle"
+                            size="lg"
+                            radius="md"
+                            style={{"color": ORANGE}}
+                        >
+                            <IconShieldCheck size={18} />
+                        </ActionIcon>
+                    </Tooltip>
+                    if isAdmin
+                    else None
+                )}
                 <Tooltip label="Log out" position="right">
                     <ActionIcon
                         onClick={handleLogout}

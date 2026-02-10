@@ -27,7 +27,6 @@ import from services.jacServer {
         refer_full_language_examples
     }
 
-
 # Client-side code - must be explicitly imported after .cl.jac auto-annexing was removed
 cl {
     import from .frontend { app as ClientApp }
@@ -36,4 +35,3 @@ cl {
         return <ClientApp />;
     }
 }
-
