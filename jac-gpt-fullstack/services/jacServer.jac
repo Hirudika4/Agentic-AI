@@ -148,9 +148,9 @@ walker :pub interact {
         visit [-->] by llm(incl_info={"message" : self.message, "chat_history" : self.chat_history[-5:], "instruction": instruction});
     }
 
-    can init_session with `root entry {
+    can init_session with Root entry {
         print("Initializing session for:", self.session_id, "User:", self.user_email);
-        all_sessions = [-->(`?Session)];
+        all_sessions = [-->(?:Session)];
         found_session = None;
         for session in all_sessions {
             if session.id == self.session_id {
@@ -204,7 +204,7 @@ walker :pub get_session {
         static has methods: list = ["post"];
     }
 
-    can get_chat_history with `root entry;
+    can get_chat_history with Root entry;
 
     can return_history with Session entry;
 }
@@ -216,14 +216,14 @@ walker :pub new_session {
         static has methods: list = ["post"];
     }
 
-    can create_session with `root entry;
+    can create_session with Root entry;
 }
 
 walker get_session_stats {
     has session_id: str;
 
-    can get_stats with `root entry {
-        all_sessions = [-->(`?Session)];
+    can get_stats with Root entry {
+        all_sessions = [-->(?:Session)];
         for session in all_sessions {
             if session.id == self.session_id {
                 user_msgs = len([m for m in session.chat_history if m["role"] == "user"]);
@@ -246,8 +246,8 @@ walker get_session_stats {
 walker :pub close_session {
     has session_id: str;
 
-    can close_session_db with `root entry {
-        all_sessions = [-->(`?Session)];
+    can close_session_db with Root entry {
+        all_sessions = [-->(?:Session)];
         for session in all_sessions {
             if session.id == self.session_id {
                 session.status = "closed";
@@ -270,7 +270,7 @@ walker :pub get_user_profile {
         static has methods: list = ["post"];
     }
 
-    can fetch_profile with `root entry;
+    can fetch_profile with Root entry;
 }
 
 walker :pub create_user_profile {
@@ -281,7 +281,7 @@ walker :pub create_user_profile {
         static has methods: list = ["post"];
     }
 
-    can setup_profile with `root entry;
+    can setup_profile with Root entry;
 }
 
 walker :pub save_user_location {
@@ -292,7 +292,7 @@ walker :pub save_user_location {
         static has methods: list = ["post"];
     }
 
-    can save_location with `root entry;
+    can save_location with Root entry;
 }
 
 walker :pub get_all_users {
@@ -302,7 +302,7 @@ walker :pub get_all_users {
         static has methods: list = ["post"];
     }
 
-    can list_users with `root entry;
+    can list_users with Root entry;
 }
 
 walker :pub get_all_sessions_admin {
@@ -312,7 +312,7 @@ walker :pub get_all_sessions_admin {
         static has methods: list = ["post"];
     }
 
-    can list_all_sessions with `root entry;
+    can list_all_sessions with Root entry;
 }
 
 walker :pub get_session_messages_admin {
@@ -323,7 +323,7 @@ walker :pub get_session_messages_admin {
         static has methods: list = ["post"];
     }
 
-    can get_session_chat with `root entry;
+    can get_session_chat with Root entry;
 }
 
 # Documentation-related walkers
@@ -334,7 +334,7 @@ walker :pub get_documentation_urls {
         static has methods: list = ["get"];
     }
 
-    can extract_urls with `root entry {
+    can extract_urls with Root entry {
         import xml.etree.ElementTree as ET;
         import os;
 
@@ -393,7 +393,7 @@ walker :pub get_doc_content {
         static has methods: list = ["post"];
     }
 
-    can fetch_doc with `root entry {
+    can fetch_doc with Root entry {
         import os;
         import requests;
         import re;
@@ -522,7 +522,7 @@ walker :pub suggest_docs {
         static has auth: bool = False;
     }
 
-    can get_suggestions with `root entry {
+    can get_suggestions with Root entry {
         
         # Load section-level documentation links with embeddings
         section_links = [];
