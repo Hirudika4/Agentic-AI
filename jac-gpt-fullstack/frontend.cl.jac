@@ -8,6 +8,8 @@ import from .pages.LoginPage { LoginPage }
 import from .pages.RegisterPage { RegisterPage }
 import from .pages.ForgotPasswordPage { ForgotPasswordPage }
 import from .pages.ResetPasswordPage { ResetPasswordPage }
+import from .pages.AdminDashboard { AdminDashboard }
+import from .utils.ProtectedRoute { ProtectedRoute }
 
 import from ".utils.monaco_initializer" { initializeMonacoGlobally }
 
@@ -55,6 +57,7 @@ def:pub app() -> any {
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             </Routes>
         </Router>
     </MantineProvider>;

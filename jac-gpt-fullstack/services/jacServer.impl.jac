@@ -235,7 +235,12 @@ impl Session.chat {
    if visitor.user_email and not self.user_email {
       self.user_email = visitor.user_email;
    }
-   visitor.chat_history = self.chat_history;  
+
+   # Save user message to chat history
+   self.chat_history.append({"role": "user", "content": visitor.message});
+   self.updated_at = datetime.now().isoformat();
+
+   visitor.chat_history = self.chat_history;
 
    visit [-->](`?Router) else {
          router_node = root ++> Router();
@@ -306,7 +311,7 @@ impl new_session.create_session {
 impl get_user_profile.fetch_profile {
    # User profiles are managed by JAC Cloud's built-in user system
    # Determine role based on email
-   is_admin = self.email == "admin.jacgpt@jaseci.org";
+   is_admin = self.email == "admin.jacgpt@jaseci.org" or self.email == "admin";
    role = "admin" if is_admin else "user";
    name = "Admin User" if is_admin else "User";
 
@@ -326,7 +331,7 @@ impl get_user_profile.fetch_profile {
 impl create_user_profile.setup_profile {
    # User profiles are managed by JAC Cloud's built-in user system
    # This just returns the profile info based on the email
-   is_admin = self.email == "admin.jacgpt@jaseci.org";
+   is_admin = self.email == "admin.jacgpt@jaseci.org" or self.email == "admin";
    role = "admin" if is_admin else "user";
    display_name = self.name if self.name else ("Admin User" if is_admin else "User");
 
@@ -411,7 +416,7 @@ impl get_all_users.list_users {
       email = session.user_email;
       if email and email not in seen_emails {
          seen_emails.add(email);
-         is_admin = email == "admin.jacgpt@jaseci.org";
+         is_admin = email == "admin.jacgpt@jaseci.org" or email == "admin";
          loc_data = location_map.get(email, {});
 
          users.append({
