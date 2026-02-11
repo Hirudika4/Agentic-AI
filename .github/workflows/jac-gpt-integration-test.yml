@@ -3,6 +3,16 @@ name: jac-gpt-fullstack Integration Test
 on:
   schedule:
     - cron: '0 0,6,12,18 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - 'jac-gpt-fullstack/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'jac-gpt-fullstack/**'
   workflow_dispatch:
     inputs:
       jaseci_ref:
