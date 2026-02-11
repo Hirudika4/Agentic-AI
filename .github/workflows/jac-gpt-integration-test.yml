@@ -49,7 +49,7 @@ jobs:
       - name: Clone jaseci repo
         run: |
           REF="${{ github.event.inputs.jaseci_ref || 'main' }}"
-          git clone --depth 1 --branch "$REF" \
+          git clone --depth 1 --recurse-submodules --branch "$REF" \
             https://github.com/jaseci-labs/jaseci.git /tmp/jaseci
           echo "JASECI_SHA=$(git -C /tmp/jaseci rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "Cloned jaseci at $(git -C /tmp/jaseci rev-parse HEAD)"
