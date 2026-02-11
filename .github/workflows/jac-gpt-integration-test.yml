@@ -1,0 +1,146 @@
+name: jac-gpt-fullstack Integration Test
+
+on:
+  schedule:
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch:
+    inputs:
+      jaseci_ref:
+        description: 'Jaseci branch/tag/SHA to test against'
+        required: false
+        default: 'main'
+
+permissions:
+  contents: read
+
+jobs:
+  integration-test:
+    name: Server Start Test (jaseci main)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Agentic-AI
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Clone jaseci repo
+        run: |
+          REF="${{ github.event.inputs.jaseci_ref || 'main' }}"
+          git clone --depth 1 --branch "$REF" \
+            https://github.com/jaseci-labs/jaseci.git /tmp/jaseci
+          echo "JASECI_SHA=$(git -C /tmp/jaseci rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "Cloned jaseci at $(git -C /tmp/jaseci rev-parse HEAD)"
+
+      - name: Install jaseci packages from source
+        run: |
+          pip install --upgrade pip
+          pip install -e /tmp/jaseci/jac
+          pip install -e /tmp/jaseci/jac-byllm
+          pip install -e /tmp/jaseci/jac-client
+          pip install -e /tmp/jaseci/jac-scale
+
+      - name: Install app dependencies
+        working-directory: jac-gpt-fullstack
+        run: jac install
+
+      - name: Verify installation
+        run: |
+          echo "=== Jac Version ==="
+          jac --version
+          echo "=== Plugins ==="
+          jac plugins list
+          echo "=== Jaseci SHA ==="
+          echo "${{ env.JASECI_SHA }}"
+
+      - name: Run jac check
+        working-directory: jac-gpt-fullstack
+        run: jac check main.jac
+
+      - name: Start server in background
+        working-directory: jac-gpt-fullstack
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          timeout 600 jac start main.jac > /tmp/jac-server.log 2>&1 &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          echo "Server starting with PID $SERVER_PID..."
+          sleep 10
+          if ! kill -0 $SERVER_PID 2>/dev/null; then
+            echo "Server process died during startup"
+            cat /tmp/jac-server.log
+            exit 1
+          fi
+
+      - name: Wait for server to be ready
+        run: |
+          echo "Waiting for server on port 8000..."
+          for i in $(seq 1 24); do
+            if ! kill -0 ${{ env.SERVER_PID }} 2>/dev/null; then
+              echo "Server process exited unexpectedly"
+              cat /tmp/jac-server.log
+              exit 1
+            fi
+            if curl -sf --max-time 10 http://localhost:8000 -o /dev/null 2>/dev/null; then
+              echo "Server is ready (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i/24: not ready, waiting 15s..."
+            sleep 15
+          done
+          echo "Server failed to respond after 24 attempts"
+          tail -100 /tmp/jac-server.log
+          exit 1
+
+      - name: Verify HTTP response
+        run: |
+          HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 http://localhost:8000)
+          echo "Root endpoint: HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 500 ]; then
+            echo "Server responding correctly"
+          else
+            echo "Unexpected HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -n "${{ env.SERVER_PID }}" ]; then
+            kill ${{ env.SERVER_PID }} 2>/dev/null || true
+            sleep 3
+            kill -9 ${{ env.SERVER_PID }} 2>/dev/null || true
+          fi
+
+      - name: Upload server logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jac-server-logs
+          path: /tmp/jac-server.log
+          retention-days: 7
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## jac-gpt-fullstack Integration Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detail | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Jaseci SHA** | \`${{ env.JASECI_SHA }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Jaseci ref** | \`${{ github.event.inputs.jaseci_ref || 'main' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | \`${{ job.status }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Trigger** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
