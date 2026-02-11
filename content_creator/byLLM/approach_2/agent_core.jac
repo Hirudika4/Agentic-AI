@@ -109,8 +109,8 @@ walker supervisor {
         return None;
     }
     def route_to_agent(utterance: str, history: str) -> AgentTypes abs;
-    can supervise with `root entry {
-        memory_list = [root --> (`?Memory)];
+    can supervise with Root entry {
+        memory_list = [root --> (?:Memory)];
         if not memory_list {
             memory_list = root ++> Memory();
         }
@@ -168,7 +168,7 @@ walker agent {
         return None;
     }
     def route_to_node(utterance: str, history: str) -> RoutingNodes abs;
-    can execute with `root entry {
+    can execute with Root entry {
         self.session = &(self.session_id);
         routed_node = self.route_to_node(self.utterance, self.session.get_history());
         node_cls = self.get_node_class(routed_node.value);
@@ -177,7 +177,7 @@ walker agent {
             return;
         }
         node_inst = node_cls();
-        visit [-->(`?node_cls)] else {
+        visit [-->](?:node_cls) else {
             attached_routed_node = here ++> node_inst;
             visit attached_routed_node;
         }
@@ -188,14 +188,14 @@ walker get_all_sessions {
     obj __specs__ {
         static has auth: bool = False;
     }
-    can get_all_sessions with `root entry {
-        memory_list = [here --> (`?Memory)];
+    can get_all_sessions with Root entry {
+        memory_list = [here --> (?:Memory)];
         if not memory_list {
             report "No sessions found.";
             disengage;
         }
         memory = memory_list[0];
-        session_list = [memory --> (`?Session)];
+        session_list = [memory --> (?:Session)];
         report [{
             "id": jid(session),
             "created_at": session.created_at
