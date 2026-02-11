@@ -91,9 +91,12 @@ def:pub useChat() -> any {
             return;
         }
 
+        # Check if this is the first message BEFORE updating state
+        isFirstMessage = messages.filter(lambda m: any -> bool { return m.isUser; }).length == 0;
+
         # Set loading immediately at the start
         isLoading = True;
-        console.log("isLoading set to True at the beginning");
+        # console.log("isLoading set to True at the beginning");
 
         # Create user message
         userMessage = {
@@ -105,6 +108,11 @@ def:pub useChat() -> any {
 
         messages = lambda prev: any -> any { return prev.concat([userMessage]); };
         lastUserMessage = content.trim();
+
+        # Update session title immediately if first message
+        if isFirstMessage {
+            updateSessionTitle(content.trim(), True);
+        }
 
         # Increment message count for guests
         if not isAuthenticated {
@@ -137,7 +145,7 @@ def:pub useChat() -> any {
                 if not firstChunkRef.current {
                     firstChunkRef.current = True;
                     isLoading = False;
-                    console.log("Received first chunk, stopping loading state.");
+                    # console.log("Received first chunk, stopping loading state.");
                 }
                 
                 # Update message by finding and replacing with new content
@@ -185,11 +193,7 @@ def:pub useChat() -> any {
             # Wait for SSE streaming to complete
             result = await sendMessage(content.trim(), sessionId, userEmail, onChunk);
 
-            if result.success {
-                # Update session title if first message (check before we added the user message)
-                isFirstMessage = messages.filter(lambda m: any -> bool { return m.isUser; }).length == 1;
-                updateSessionTitle(content.trim(), isFirstMessage);
-            } else {
+            if not result.success {
                 # Update message with error
                 console.error("Error in sendMessage:", result.error);
                 messages = lambda prev: any -> any {

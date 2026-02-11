@@ -12,7 +12,8 @@ import from "@mantine/core" {
     Avatar,
     Tooltip,
     Divider,
-    UnstyledButton
+    UnstyledButton,
+    Menu
 }
 import from "@mantine/hooks" { useMediaQuery }
 import from "@tabler/icons-react" {
@@ -26,7 +27,8 @@ import from "@tabler/icons-react" {
     IconUserPlus,
     IconLogin,
     IconMessage,
-    IconShieldCheck
+    IconShieldCheck,
+    IconDots
 }
 import from ..hooks.useAuth { getUsernameFromToken }
 import from ..services.jacService { getUserProfile }
@@ -52,6 +54,7 @@ def:pub Sidebar(
     # --- Local UI state ---
     has isExpanded: bool = True;
     has isAdmin: bool = False;
+    has hoveredSessionId: str = "";
 
     navigate = useNavigate();
     isAuthenticated = jacIsLoggedIn();
@@ -290,15 +293,12 @@ def:pub Sidebar(
         sessionsContent = <Stack gap={4}>
             {chatSessions.map(lambda session: any -> any {
                 isCurrentSession = session.id == currentSessionId;
+                isHovered = hoveredSessionId == session.id;
 
-                return <UnstyledButton
+                return <Box
                     key={session.id}
-                    onClick={lambda -> None {
-                        if not isLoading and onLoadSession {
-                            onLoadSession(session.id);
-                        }
-                    }}
                     style={{
+                        "position": "relative",
                         "display": "flex",
                         "alignItems": "center",
                         "gap": "8px",
@@ -311,8 +311,14 @@ def:pub Sidebar(
                         "cursor": (("not-allowed" if isLoading else "pointer")),
                         "transition": "all 0.2s ease"
                     }}
+                    onClick={lambda -> None {
+                        if not isLoading and onLoadSession {
+                            onLoadSession(session.id);
+                        }
+                    }}
+                    onMouseEnter={lambda -> None { hoveredSessionId = session.id; }}
+                    onMouseLeave={lambda -> None { hoveredSessionId = ""; }}
                 >
-                    <IconMessage size={14} color={MUTED} />
                     <Text
                         size="sm"
                         style={{
@@ -326,23 +332,45 @@ def:pub Sidebar(
                         {session.title}
                     </Text>
 
-                    <ActionIcon
-                        onClick={lambda e: any -> None {
-                            e.stopPropagation();
-                            if not isLoading and onDeleteSession {
-                                onDeleteSession(session.id);
-                            }
-                        }}
-                        disabled={isLoading}
-                        variant="subtle"
-                        color="red"
-                        size="xs"
-                        radius="sm"
-                        style={{"opacity": "0.75"}}
-                    >
-                        <IconTrash size={12} />
-                    </ActionIcon>
-                </UnstyledButton>;
+                    {(
+                        <Menu position="right-start" shadow="md">
+                            <Menu.Target>
+                                <ActionIcon
+                                    variant="subtle"
+                                    size="xs"
+                                    radius="sm"
+                                    onClick={lambda e: any -> None {
+                                        e.stopPropagation();
+                                    }}
+                                    style={{
+                                        "color": MUTED,
+                                        "opacity": "0.8"
+                                    }}
+                                >
+                                    <IconDots size={14} />
+                                </ActionIcon>
+                            </Menu.Target>
+
+                            <Menu.Dropdown>
+                                <Menu.Item
+                                    color="red"
+                                    leftSection={<IconTrash size={14} />}
+                                    onClick={lambda e: any -> None {
+                                        e.stopPropagation();
+                                        if not isLoading and onDeleteSession {
+                                            onDeleteSession(session.id);
+                                        }
+                                    }}
+                                    disabled={isLoading}
+                                >
+                                    Delete chat
+                                </Menu.Item>
+                            </Menu.Dropdown>
+                        </Menu>
+                        if isHovered
+                        else None
+                    )}
+                </Box>;
             })}
         </Stack>;
     }
