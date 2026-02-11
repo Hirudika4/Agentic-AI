@@ -4,7 +4,7 @@ import from react { useState }
 import from "@jac/runtime" { Link }
 import from ..utils.cn { cn }
 
-def:pub ForgotPasswordPage() -> any {
+def:pub ForgotPasswordPage() -> JsxElement {
     has email: str = "";
     has error: str = "";
     has success: str = "";

@@ -31,7 +31,7 @@ import from services.jacServer {
 cl {
     import from .frontend { app as ClientApp }
 
-    def:pub app() -> any {
+    def:pub app() -> JsxElement {
         return <ClientApp />;
     }
 }

@@ -11,7 +11,7 @@ import from ..components.Sidebar { Sidebar }
 import from ..components.DocumentationPanel { DocumentationPanel }
 
 # Main Jac GPT Chatbot component (Complete Specification)
-def:pub JacChatbot() -> any {
+def:pub JacChatbot() -> JsxElement {
     has sidebarOpen: bool = False;
     has docPanelOpen: bool = False;
 

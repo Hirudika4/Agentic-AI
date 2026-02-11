@@ -4,7 +4,7 @@ import from react { useState, useEffect }
 import from "@jac/runtime" { Link, useNavigate }
 import from ..utils.cn { cn }
 
-def:pub ResetPasswordPage() -> any {
+def:pub ResetPasswordPage() -> JsxElement {
     navigate = useNavigate();
 
     has password: str = "";

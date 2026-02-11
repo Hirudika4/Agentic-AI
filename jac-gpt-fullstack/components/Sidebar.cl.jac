@@ -43,7 +43,7 @@ def:pub Sidebar(
     isLoading: bool = False,
     messageCount: int = 0,
     maxFreeMessages: int = 30
-) -> any {
+) -> JsxElement {
 
     # --- Responsive / visibility ---
     isDesktop = useMediaQuery("(min-width: 1024px)");

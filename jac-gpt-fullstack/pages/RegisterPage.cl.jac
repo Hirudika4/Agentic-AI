@@ -21,7 +21,7 @@ import from "@tabler/icons-react" {
 }
 import from ..hooks.useAuth { useAuth }
 
-def:pub RegisterPage() -> any {
+def:pub RegisterPage() -> JsxElement {
     hook = useAuth();
     navigate = useNavigate();
 

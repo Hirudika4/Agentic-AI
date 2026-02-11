@@ -39,7 +39,7 @@ import from ..services.jacService {
     getSessionMessagesAdmin
 }
 
-def:pub AdminDashboard() -> any {
+def:pub AdminDashboard() -> JsxElement {
     navigate = useNavigate();
     username = getUsernameFromToken();
 

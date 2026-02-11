@@ -26,7 +26,7 @@ import "..styles/jacSyntax.css";
 
 
 """Generic code block component with copy functionality (for non-Jac languages)."""
-def:pub CodeBlock(language: str, code: str, children: any = null) -> any {
+def:pub CodeBlock(language: str, code: str, children: any = null) -> JsxElement {
     has copied: bool = false;
 
     def handleCopy() -> None {
@@ -101,7 +101,7 @@ def:pub CodeBlock(language: str, code: str, children: any = null) -> any {
 
 
 """Read-only Jac code block using CodeMirror 6."""
-def:pub JacCodeBlock(code: str) -> any {
+def:pub JacCodeBlock(code: str) -> JsxElement {
     has copied: bool = false;
     editorRef = useRef(None);
     viewRef = useRef(None);
@@ -179,7 +179,7 @@ def:pub JacCodeBlock(code: str) -> any {
 }
 
 """Chat message component."""
-def:pub ChatMessage(message: str, isUser: bool, timestamp: any = null) -> any {
+def:pub ChatMessage(message: str, isUser: bool, timestamp: any = null) -> JsxElement {
 
     ORANGE = "#f97316";
     logoSrc = "/logo.png";

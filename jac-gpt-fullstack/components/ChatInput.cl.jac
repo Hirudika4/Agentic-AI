@@ -13,7 +13,7 @@ def:pub ChatInput(
     placeholder: str = "Ask about Jac syntax, functions, loops, classes, or request code examples...",
     isLoading: bool = False,
     onStop: any = None
-) -> any {
+) -> JsxElement {
     has inputValue: str = "";
     has isFocused: bool = False;
     textareaRef = useRef(None);

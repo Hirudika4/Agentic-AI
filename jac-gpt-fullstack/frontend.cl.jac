@@ -17,7 +17,7 @@ import "@mantine/core/styles.css";
 import ".global.css";
 
 """Main app component with routing."""
-def:pub app() -> any {
+def:pub app() -> JsxElement {
     useEffect(lambda {
         async def initMonaco() -> None {
             try {

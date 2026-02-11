@@ -22,7 +22,7 @@ import from "@tabler/icons-react" {
 }
 import from ..hooks.useAuth { useAuth }
 
-def:pub LoginPage() -> any {
+def:pub LoginPage() -> JsxElement {
     hook = useAuth();
     navigate = useNavigate();
 

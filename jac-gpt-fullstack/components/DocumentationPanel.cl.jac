@@ -8,7 +8,7 @@ def:pub DocumentationPanel(
     suggestions: list = [],
     isVisible: bool = True,
     onToggle: any = None
-) -> any {
+) -> JsxElement {
     has currentSuggestions: list = [];
     has selectedDoc: any = None;
     has loading: bool = False;
