@@ -1,9 +1,0 @@
-.env
-server/mydatabase/
-__pycache__/
-*.bin
-*.sqlite3
-*.pickle
-!test_dataset.json
-
-faiss_index/
