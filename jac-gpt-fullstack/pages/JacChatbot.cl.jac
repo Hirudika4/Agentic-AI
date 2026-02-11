@@ -47,6 +47,14 @@ def:pub JacChatbot() -> any {
                         transform: translateY(-4px);
                     }
                 }
+                @keyframes shimmer {
+                    0% {
+                        background-position: 200% center;
+                    }
+                    100% {
+                        background-position: -200% center;
+                    }
+                }
             """;
             document.head.appendChild(style);
         }
@@ -282,6 +290,29 @@ def:pub JacChatbot() -> any {
     </button>;
 
     # Header bar (desktop only - uses media query)
+    # Compute button text
+    docButtonText = "Show Docs";
+    if chat.isSearchingDocs {
+        docButtonText = "Searching docs";
+    } elif docPanelOpen {
+        docButtonText = "Hide Docs";
+    }
+
+    # Create text span with shimmer effect when searching
+    textSpan = None;
+    if chat.isSearchingDocs {
+        textSpan = <span style={{
+            "background": "linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 35%, rgba(255, 255, 255, 0.4) 45%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.4) 55%, rgba(255, 255, 255, 0.85) 65%, rgba(255, 255, 255, 1) 100%)",
+            "backgroundSize": "200% 100%",
+            "backgroundClip": "text",
+            "WebkitBackgroundClip": "text",
+            "color": "transparent",
+            "animation": "shimmer 2.5s linear infinite"
+        }}>{docButtonText}</span>;
+    } else {
+        textSpan = <span>{docButtonText}</span>;
+    }
+
     headerBar = <div style={{
         "display": "flex",
         "alignItems": "center",
@@ -329,7 +360,7 @@ def:pub JacChatbot() -> any {
             }}
         >
             {((<IconX size={16} />) if docPanelOpen else (<IconBook size={16} />))}
-            <span>{(("Hide Docs") if docPanelOpen else ("Show Docs"))}</span>
+            {textSpan}
         </button>
     </div>;
 
