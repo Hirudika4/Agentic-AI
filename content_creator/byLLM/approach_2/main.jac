@@ -5,7 +5,7 @@ import from agent_core { Memory, Session }
 import from byllm.llm { Model }
 import sys;
 
-glob llm = Model(model_name="gpt-4o", verbose=False);
+glob llm = Model(model_name="gpt-4o-mini", config={"verbose": False});
 
 
 enum AgentTypes {
@@ -74,7 +74,7 @@ node PlannerAgent(Agent) {
         visitor.session.current_state["planning_complete"] = True;
         
         print("Plan created, moving to writing stage");
-        visit [<--](`?Supervisor);
+        visit [<--](?:Supervisor);
     }
 }
   
@@ -101,7 +101,7 @@ node WriterAgent(Agent) {
         visitor.session.current_state["review_complete"] = False;
         
         print("Content created, moving to review stage");
-        visit [<--](`?Supervisor);
+        visit [<--](?:Supervisor);
     }
 }
 
@@ -133,7 +133,7 @@ node ReviewAgent(Agent) {
         
         if not content {
             print("No content to review, returning to supervisor");
-            visit [<--](`?Supervisor);
+            visit [<--](?:Supervisor);
             return;
         }
         
@@ -168,7 +168,7 @@ node ReviewAgent(Agent) {
             }
         }
         
-        visit [<--](`?Supervisor);
+        visit [<--](?:Supervisor);
     }
 }
 
@@ -206,12 +206,12 @@ walker agent_executor {
             
             disengage;
         } else {
-            visit [-->](`?Agent)(?agent_type == next_agent);
+            visit [-->](?:Agent, agent_type == next_agent);
         }
     }
 
-    can init_graph with `root entry {
-        memory_list = [root --> (`?Memory)];
+    can init_graph with Root entry {
+        memory_list = [root --> (?:Memory)];
         if not memory_list {
             memory_list = root ++> Memory();
         }
@@ -229,7 +229,7 @@ walker agent_executor {
         
         print(f"Starting workflow for: {self.utterance}");
 
-        visit [-->](`?Supervisor) else {
+        visit [-->](?:Supervisor) else {
             router_node = here ++> Supervisor();
             router_node ++> PlannerAgent();
             router_node ++> WriterAgent(); 
