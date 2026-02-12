@@ -53,7 +53,7 @@ walker SupervisorAgent(agent) {
         static has auth: bool = False;
     }
     def find_next_agent(user_input: dict, current_agent_response: str, current_state: dict) -> AgentTypes by llm();
-    can supervise with `root entry;
+    can supervise with Root entry;
 }
 
 walker planner_agent(agent) {

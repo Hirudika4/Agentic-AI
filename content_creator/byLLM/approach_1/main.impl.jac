@@ -17,19 +17,19 @@ impl agent.call_next_agent {
         disengage;
 
     } elif next_agent == AgentTypes.PLANNER_AGENT {
-        plan_handling = [root --> (`?PlanerHandling)][0];
+        plan_handling = [root --> (?:PlanerHandling)][0];
         planner_agent(session=self.session, user_input=user_input) spawn plan_handling;
 
     } elif next_agent == AgentTypes.WRITER_AGENT {
-        writer_handling = [root --> (`?WriterHandling)][0];
+        writer_handling = [root --> (?:WriterHandling)][0];
         writer_agent(session=self.session, user_input=user_input) spawn writer_handling;
 
     } elif next_agent == AgentTypes.REVIEW_AGENT {
-        review_handling = [root --> (`?ReviewHandling)][0];
+        review_handling = [root --> (?:ReviewHandling)][0];
         review_agent(session=self.session, user_input=user_input) spawn review_handling;
 
     } elif next_agent == AgentTypes.MEDIA_AGENT {
-        media_handling = [root --> (`?MediaHandling)][0];
+        media_handling = [root --> (?:MediaHandling)][0];
         media_agent(session=self.session) spawn media_handling;
     } else {
         print("No valid next agent found, stopping execution.");
@@ -38,7 +38,7 @@ impl agent.call_next_agent {
 }
 
 impl SupervisorAgent.supervise {
-    memory_list = [root --> (`?Memory)];
+    memory_list = [root --> (?:Memory)];
     if not memory_list {
         memory_list = root ++> Memory();
     }
@@ -50,16 +50,16 @@ impl SupervisorAgent.supervise {
         self.session = &(self.session_id);
     }
 
-    if not [root --> (`?PlanerHandling)] {
+    if not [root --> (?:PlanerHandling)] {
         root ++> PlanerHandling();
     }
-    if not [root --> (`?WriterHandling)] {
+    if not [root --> (?:WriterHandling)] {
         root ++> WriterHandling();
     }
-    if not [root --> (`?ReviewHandling)] {
+    if not [root --> (?:ReviewHandling)] {
         root ++> ReviewHandling();
     }
-    if not [root --> (`?MediaHandling)] {
+    if not [root --> (?:MediaHandling)] {
         root ++> MediaHandling();
     }
     
