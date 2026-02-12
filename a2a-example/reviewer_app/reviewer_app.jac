@@ -122,8 +122,8 @@ node reviewer_agent {
 # ============================================================================
 
 walker :pub get_agent_card {
-    can start with `root entry {
-        visit [-->(`?reviewer_agent)];
+    can start with Root entry {
+        visit [-->(?:reviewer_agent)];
     }
 
     can return_card with reviewer_agent entry {
@@ -135,8 +135,8 @@ walker :pub a2a_tasks_send {
     has skill_id: str = "review_content",
         params: dict = {};
 
-    can start with `root entry {
-        visit [-->(`?reviewer_agent)];
+    can start with Root entry {
+        visit [-->(?:reviewer_agent)];
     }
 
     can execute with reviewer_agent entry {
@@ -156,8 +156,8 @@ walker :pub review_content {
     has content: str = "",
         tone: str = "professional";
 
-    can start with `root entry {
-        visit [-->(`?reviewer_agent)];
+    can start with Root entry {
+        visit [-->(?:reviewer_agent)];
     }
 
     can review with reviewer_agent entry {
@@ -170,8 +170,8 @@ walker :pub review_content {
 }
 
 walker :pub init_agent {
-    can start with `root entry {
-        if not [-->(`?reviewer_agent)] {
+    can start with Root entry {
+        if not [-->(?:reviewer_agent)] {
             here ++> reviewer_agent();
             print("Created: reviewer_agent");
         }

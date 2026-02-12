@@ -170,8 +170,8 @@ node writer_agent {
 # ============================================================================
 
 walker :pub get_agent_card {
-    can start with `root entry {
-        visit [-->(`?writer_agent)];
+    can start with Root entry {
+        visit [-->(?:writer_agent)];
     }
 
     can return_card with writer_agent entry {
@@ -180,8 +180,8 @@ walker :pub get_agent_card {
 }
 
 walker :pub discover_reviewer {
-    can start with `root entry {
-        visit [-->(`?writer_agent)];
+    can start with Root entry {
+        visit [-->(?:writer_agent)];
     }
 
     can discover with writer_agent entry {
@@ -193,8 +193,8 @@ walker :pub a2a_tasks_send {
     has skill_id: str = "create_content",
         params: dict = {};
 
-    can start with `root entry {
-        visit [-->(`?writer_agent)];
+    can start with Root entry {
+        visit [-->(?:writer_agent)];
     }
 
     can execute with writer_agent entry {
@@ -214,8 +214,8 @@ walker :pub create_content {
     has topic: str = "artificial intelligence",
         tone: str = "professional";
 
-    can start with `root entry {
-        visit [-->(`?writer_agent)];
+    can start with Root entry {
+        visit [-->(?:writer_agent)];
     }
 
     can write with writer_agent entry {
@@ -228,8 +228,8 @@ walker :pub create_content {
 }
 
 walker :pub init_agent {
-    can start with `root entry {
-        if not [-->(`?writer_agent)] {
+    can start with Root entry {
+        if not [-->(?:writer_agent)] {
             here ++> writer_agent();
             print("Created: writer_agent");
         }
