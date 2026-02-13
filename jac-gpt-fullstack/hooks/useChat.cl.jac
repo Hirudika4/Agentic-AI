@@ -20,6 +20,7 @@ def:pub useChat() -> any {
     messagesEndRef = useRef(None);
     firstChunkRef = useRef(False);
     prevMessageCountRef = useRef(0);
+    abortControllerRef = useRef(None);
     isAuthenticated = jacIsLoggedIn();
 
     # Load message count from localStorage for guests
@@ -120,6 +121,9 @@ def:pub useChat() -> any {
         }
 
         try {
+            # Create AbortController for this request
+            abortControllerRef.current = Reflect.construct(AbortController, []);
+            
             # Get response from backend
             userEmail = "";
             if isAuthenticated {
@@ -191,25 +195,36 @@ def:pub useChat() -> any {
             handleSuggestions();
             
             # Wait for SSE streaming to complete
-            result = await sendMessage(content.trim(), sessionId, userEmail, onChunk);
+            result = await sendMessage(content.trim(), sessionId, userEmail, onChunk, abortControllerRef.current.signal);
 
             if not result.success {
-                # Update message with error
-                console.error("Error in sendMessage:", result.error);
-                messages = lambda prev: any -> any {
-                    return prev.map(lambda m: any -> any {
-                        if m.id == botMessageId {
-                            return {
-                                "id": m.id,
-                                "content": "Sorry, I encountered an error. Please try again.",
-                                "isUser": m.isUser,
-                                "timestamp": m.timestamp
-                            };
-                        }
-                        return m;
-                    });
-                };
+                # Check if request was aborted
+                if result.aborted {
+                    # Remove the bot message if aborted
+                    messages = lambda prev: any -> any {
+                        return prev.filter(lambda m: any -> bool { return m.id != botMessageId; });
+                    };
+                } else {
+                    # Update message with error
+                    console.error("Error in sendMessage:", result.error);
+                    messages = lambda prev: any -> any {
+                        return prev.map(lambda m: any -> any {
+                            if m.id == botMessageId {
+                                return {
+                                    "id": m.id,
+                                    "content": "Sorry, I encountered an error. Please try again.",
+                                    "isUser": m.isUser,
+                                    "timestamp": m.timestamp
+                                };
+                            }
+                            return m;
+                        });
+                    };
+                }
             }
+            
+            # Clear abort controller after completion
+            abortControllerRef.current = None;
         } except Exception as e {
             console.error("Send message error:", e);
             errorMessage = {
@@ -321,6 +336,16 @@ def:pub useChat() -> any {
     }
 
     def handleStopGeneration() -> None {
+        # Abort the ongoing request if exists
+        if abortControllerRef.current {
+            try {
+                abortControllerRef.current.abort();
+                console.log("Request aborted by user");
+            } except Exception as e {
+                console.error("Error aborting request:", e);
+            }
+            abortControllerRef.current = None;
+        }
         isLoading = False;
     }
 
