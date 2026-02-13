@@ -165,8 +165,7 @@ def:pub JacChatbot() -> any {
             "alignItems": "center",
             "justifyContent": "center",
             "paddingLeft": "16px",
-            "paddingRight": "16px",
-            "marginTop": "-96px"
+            "paddingRight": "16px"
         }}>
             <div style={{
                 "maxWidth": "768px",
