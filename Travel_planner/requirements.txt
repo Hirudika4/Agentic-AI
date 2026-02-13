@@ -2,5 +2,5 @@ streamlit
 byllm
 requests
 jaclang
-jac-cloud
+jac-scale
 python-dotenv

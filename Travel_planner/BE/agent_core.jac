@@ -5,7 +5,7 @@ import from agent_brain { brain, AgentType, AgentRole, AgentResult }
 import from agent_memory { memory }
 
 # Global LLM instance used for agent reasoning and decision-making
-glob llm = Model(model_name="gpt-4o-mini", verbose=False);
+glob llm = Model(model_name="gpt-4o-mini", config={"verbose": False});
 
 
 """
@@ -199,7 +199,7 @@ node BaseAgent {
         }
 
         if should_delegate {
-            connected_agents = [-->(`?BaseAgent)] + [<--(`?BaseAgent)];
+            connected_agents = [-->(?:BaseAgent)] + [<--(?:BaseAgent)];
 
             # Decide which agent should handle the next step
             next_agent_data = self.brain.decide_next_agent(
@@ -221,8 +221,8 @@ node BaseAgent {
             print();
 
             # Visit next agent based on role
-            visit [-->(`?BaseAgent: agent_role == next_agent)] else {
-                visit [<--(`?BaseAgent: agent_role == next_agent)];
+            visit [-->(?:BaseAgent, agent_role == next_agent)] else {
+                visit [<--(?:BaseAgent, agent_role == next_agent)];
             }
         } else {
             self.brain.store_agent_result(self.agent_role, self.final_result);  # Store result globally

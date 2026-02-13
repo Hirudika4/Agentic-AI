@@ -9,8 +9,8 @@ walker chat {
         static has auth: bool = False;
     }
 
-    can execute with `root entry {
-        if [-->(`?Session)] {
+    can execute with Root entry {
+        if [-->(?:Session)] {
             visit [-->];
         } else {
             new_session = here ++> Session();
@@ -28,7 +28,7 @@ walker chat {
 
 node Session {
     can generate_result with AgentVisitor entry {
-        if [-->](`?BaseAgent) {
+        if [-->](?:BaseAgent) {
             visit [-->];
         } else {
             UI_Agent = self ++> TripIntakeAgent();
