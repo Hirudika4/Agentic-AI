@@ -20,7 +20,7 @@ impl ImageChat.chat {
     img_path = visitor.file_path;
     response = self.respond_with_image(
         img=Image(img_path),
-        text=visitor.message,
+        text=Text(visitor.message),
         chat_history=visitor.chat_history
     );
 
@@ -34,7 +34,7 @@ impl VideoChat.chat {
     video_path = visitor.file_path;
     response = self.respond_with_video(
         video=Video(video_path),
-        text=visitor.message,
+        text=Text(visitor.message),
         chat_history=visitor.chat_history
     );
 
