@@ -5,15 +5,12 @@ import from dotenv { load_dotenv }
 import from memory { Memory, Session }
 import os;
 
-walker task_manager {
+walker:pub task_manager {
     has utterance: str = "";
     has session_id: str = "";
 
-    obj __specs__ {
-        static has auth: bool = False;
-    }
-    can call_build_graph with `root entry {
-        memory_list = [root --> (`?Memory)];
+    can call_build_graph with Root entry {
+        memory_list = [root --> (?:Memory)];
         if not memory_list {
             memory_list = root ++> Memory();
         }
