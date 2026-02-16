@@ -35,13 +35,10 @@ enum RoutingNodes {
     GENERAL_CHAT = "GeneralChat"
 }
 
-walker agent {
+walker:pub agent {
     has utterance: str = "";
     has session_id: str = "";
 
-    obj __specs__ {
-        static has auth: bool = False;
-    }
     def get_node_class(class_name: str) {
         main_mod = sys.modules.get("main");
         if main_mod and hasattr(main_mod, class_name) {
@@ -82,10 +79,7 @@ walker agent {
     }
 }
 
-walker get_all_sessions {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
+walker:pub get_all_sessions {
     can get_all_sessions with Root entry {
         memory_list = [here --> (?:Memory)];
         if not memory_list {

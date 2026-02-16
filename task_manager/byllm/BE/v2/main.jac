@@ -61,9 +61,6 @@ walker task_manager(agent) {
     def route_to_node(utterance: str, history: str) -> RoutingNodes by llm();
 }
 
-walker get_all_tasks {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
+walker:pub get_all_tasks {
     can get_all_tasks with Root entry;
 }

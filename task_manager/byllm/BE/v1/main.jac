@@ -133,13 +133,10 @@ enum RoutingNodes{
     GENERAL_CHAT = "GeneralChat"
 }
 
-walker task_manager {
+walker:pub task_manager {
     has utterance: str = "";
     has session_id: str = "";
     
-    obj __specs__ {
-        static has auth: bool = False;
-    }
     def route_to_node(utterance: str, history: str) -> RoutingNodes by llm();
     can execute with Root entry {
         memory_list = [root --> (?:Memory)];
@@ -166,10 +163,7 @@ walker task_manager {
     }
 }
 
-walker get_all_tasks {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
+walker:pub get_all_tasks {
     can get_all_tasks with Root entry {
         task_handling_node = [root --> (?:TaskHandling)];
         if not task_handling_node {
@@ -180,10 +174,7 @@ walker get_all_tasks {
     }
 }
 
-walker get_all_sessions {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
+walker:pub get_all_sessions {
     can get_all_sessions with Root entry {
         memory_list = [here --> (?:Memory)];
         if not memory_list {
