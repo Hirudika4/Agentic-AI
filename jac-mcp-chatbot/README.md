@@ -68,7 +68,7 @@ This project demonstrates how to build a modern chatbot capable of interacting w
 2. Start the main application:
 
    ```bash
-   jac serve server.jac
+   jac start server.jac
    ```
 
 3. Launch the web interface:

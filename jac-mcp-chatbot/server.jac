@@ -6,7 +6,7 @@ import base64;
 import mcp_client;
 
 glob rag_engine:RagEngine = RagEngine();
-glob llm = Model(model_name='gpt-4o-mini', verbose=True);
+glob llm = Model(model_name='gpt-4o-mini',config={"verbose": False});
 glob MCP_SERVER_URL: str = os.getenv('MCP_SERVER_URL', 'http://localhost:8899/mcp');
 
 
@@ -31,20 +31,20 @@ walker infer {
     has file_path: str = "";
     has response: str = "";
 
-    can init_router with `root entry {
-        visit [-->](`?Router) else {
+    can init_router with Root entry {
+        visit [-->](?:Router) else {
             router_node = here ++> Router();
-            router_node ++> RagChat();
-            router_node ++> QAChat();
-            router_node ++> ImageChat();
-            router_node ++> VideoChat();
+            router_node ++> RagChat(chat_type=ChatType.RAG);
+            router_node ++> QAChat(chat_type=ChatType.QA);
+            router_node ++> ImageChat(chat_type=ChatType.IMAGE);
+            router_node ++> VideoChat(chat_type=ChatType.VIDEO);
             visit router_node;
         }
     }
     can route with Router entry {
         classification = here.classify(message = self.message);
         print("Routing message:", self.message, "to chat type:", classification);
-        visit [-->](`?Chat)(?chat_type==classification);
+        visit [-->](?:Chat, chat_type==classification);
     }
 }
 
@@ -99,8 +99,8 @@ walker interact {
     has chat_history: list[dict] = [];
     has file_path: str = "";
 
-    can init_session with `root entry {
-        visit [-->](`?Session)(?id == self.session_id) else {
+    can init_session with Root entry {
+        visit [-->](?:Session)(?id == self.session_id) else {
             session_node = here ++> Session(id=self.session_id, chat_history=[], file_path=self.file_path, status=1);
             visit session_node;
         }
@@ -131,5 +131,5 @@ walker upload_file {
     has file_data: str;
     has session_id: str;
 
-    can save_doc with `root entry;
+    can save_doc with Root entry;
 }
