@@ -57,7 +57,7 @@ async def:pub getSession(sessionId: str) -> any {
 }
 
 """Send a message and get a response from the chatbot (SSE streaming)."""
-async def:pub sendMessage(message: str, sessionId: str, userEmail: str = "", onChunk: any = None) -> any {
+async def:pub sendMessage(message: str, sessionId: str, userEmail: str = "", onChunk: any = None, abortSignal: any = None) -> any {
     try {
         # Get token for authentication
         token = localStorage.getItem("jac_token");
@@ -75,7 +75,8 @@ async def:pub sendMessage(message: str, sessionId: str, userEmail: str = "", onC
                     "message": message,
                     "session_id": sessionId,
                     "user_email": userEmail
-                })
+                }),
+                "signal": abortSignal
             }
         );
         
@@ -131,6 +132,15 @@ async def:pub sendMessage(message: str, sessionId: str, userEmail: str = "", onC
             "success": True
         };
     } except Exception as e {
+        # Check if it's an abort error
+        errorName = e.name if e.name else "";
+        if errorName == "AbortError" {
+            console.log("Request aborted by user");
+            return {
+                "success": False,
+                "aborted": True
+            };
+        }
         console.error("sendMessage error:", e);
         return {
             "success": False,
