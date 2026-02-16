@@ -5,7 +5,7 @@ import os;
 include agent_core;
 import from utils { get_current_datetime }
 
-glob llm = Model(model_name="gpt-4o", verbose=False);
+glob llm = Model(model_name="gpt-4o-mini", config={"verbose": False});
 
 enum RoutingNodes {
     GENERAL_CHAT = "GeneralChat",
@@ -61,9 +61,6 @@ walker task_manager(agent) {
     def route_to_node(utterance: str, history: str) -> RoutingNodes by llm();
 }
 
-walker get_all_tasks {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
-    can get_all_tasks with `root entry;
+walker:pub get_all_tasks {
+    can get_all_tasks with Root entry;
 }

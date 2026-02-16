@@ -7,7 +7,7 @@ impl TaskHandling.add_task {
     return "Task added successfully";
 }
 impl TaskHandling.check_scheduled_tasks {
-    return [self --> (`?Task)];
+    return [self --> (?:Task)];
 }
 
 sem TaskHandling.extract_task_info = "time and date should be extracted in the format of 'YYYY-MM-DD HH:MM:SS'. Response should be like 'Task: <task>, Date: <date>, Time: <time>' is added successfully.";
@@ -50,10 +50,10 @@ Never send without explicit confirmation.
 # Implementation of get_all_tasks
 # -------------------------------------------
 impl get_all_tasks.get_all_tasks {
-    task_handling_node = [root --> (`?TaskHandling)];
+    task_handling_node = [root --> (?:TaskHandling)];
     if not task_handling_node {
         report "No tasks found.";
         disengage;
     }
-    report [task_handling_node[0] --> (`?Task)];
+    report [task_handling_node[0] --> (?:Task)];
 }
