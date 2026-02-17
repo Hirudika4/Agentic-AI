@@ -1,15 +1,15 @@
 [
   {
-    "url": "https://docs.jaseci.org/tutorials/ai/quickstart/",
-    "title": "AI integration"
+    "url": "https://docs.jaseci.org/quick-guide/what-makes-jac-different/",
+    "title": "Introduction to Jac programming language"
   },
   {
     "url": "https://docs.jaseci.org/tutorials/language/osp/",
     "title": "Object Spatial Programming"
   },
   {
-    "url": "https://docs.jaseci.org/quick-guide/what-makes-jac-different/",
-    "title": "Introduction to Jac programming language"
+    "url": "https://docs.jaseci.org/tutorials/ai/quickstart/",
+    "title": "AI integration"
   },
   {
     "url": "https://docs.jaseci.org/tutorials/fullstack/setup/",

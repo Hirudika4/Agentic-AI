@@ -13,26 +13,15 @@ def:pub DocumentationPanel(
     has selectedDoc: any = None;
     has loading: bool = False;
     has error: str = "";
+    has defaultSuggestions: list = [];
 
-    # Default documentation suggestions
-    defaultSuggestions = [
-        {
-            "url": "https://docs.jaseci.org/learn/tour/",
-            "title": "Introduction to Jac"
-        },
-        {
-            "url": "https://docs.jaseci.org/learn/data_spatial/nodes_and_edges/",
-            "title": "Nodes and Edges"
-        },
-        {
-            "url": "https://docs.jaseci.org/learn/data_spatial/walkers/",
-            "title": "Walkers"
-        },
-        {
-            "url": "https://docs.jaseci.org/ai-integration/",
-            "title": "AI Integration"
-        }
-    ];
+    # Load default documentation suggestions from JSON
+    useEffect(lambda -> None {
+        fetch("../services/docs_links/default_suggestion_links.json")
+            .then(lambda response: any -> any { return response.json(); })
+            .then(lambda data: any -> None { defaultSuggestions = data; })
+            .catch(lambda err: any -> None { console.log("Failed to load default suggestions:", err); });
+    }, []);
 
     # Ensure HTTPS for URLs
     def ensureHttpsUrl(url: str) -> str {
@@ -49,7 +38,7 @@ def:pub DocumentationPanel(
         } else {
             currentSuggestions = defaultSuggestions;
         }
-    }, [suggestions, isVisible]);
+    }, [suggestions, isVisible, defaultSuggestions]);
 
     def handleSuggestionClick(suggestion: any) -> None {
         loading = True;
