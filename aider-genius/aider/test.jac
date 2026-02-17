@@ -1,4 +1,4 @@
-import from mtllm { Model }
+import from byllm.lib { Model }
 import from aider.web_search { web_search, create_web_searcher, WebSearcher }
 import from typing { Optional, Dict, Any }
 import from mcp_client { list_mcp_tools, call_mcp_tool }
@@ -6,7 +6,7 @@ import mcp_client;
 
 
 with entry {
-    planning_model = Model(model_name="gemini/gemini-2.5-flash", temperature=0.1,verbose=True);
+    planning_model = Model(model_name="gemini/gemini-2.5-flash",config={"temperature": 0.1, "verbose": True});
 }
 
 # Perform a web search using the Serper API.
