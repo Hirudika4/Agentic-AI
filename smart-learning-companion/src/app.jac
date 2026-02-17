@@ -22,7 +22,7 @@ walker learn_topic {
         )
     );
 
-    can learn with `root entry {
+    can learn with Root entry {
         explanation = self.explain_topic(topic=self.topic, level=self.level);
         report {"topic": self.topic, "level": self.level, "explanation": explanation} ;
     }
@@ -41,7 +41,7 @@ walker generate_quiz {
         )
     );
 
-    can generate with `root entry {
+    can generate with Root entry {
         quiz_data = self.create_quiz(
             topic=self.topic,
             difficulty=self.difficulty,
@@ -67,7 +67,7 @@ walker chat_tutor {
         )
     );
 
-    can chat with `root entry {
+    can chat with Root entry {
         history_text = "\n".join(
             [f"{msg['role']}: {msg['content']}" for msg in self.context[-6:]]
         );
@@ -90,7 +90,7 @@ walker suggest_learning_path {
         )
     );
 
-    can suggest with `root entry {
+    can suggest with Root entry {
         path_data = self.create_learning_path(
             goal=self.goal, knowledge_level=self.current_knowledge
         );
