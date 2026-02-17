@@ -52,6 +52,9 @@ namespace = "jac-gpt-test"
 jaseci_repo_url = "https://github.com/jaseci-labs/jaseci.git"
 jaseci_branch = "main"
 
+[plugins.scale.secrets]
+OPENAI_API_KEY = "${OPENAI_API_KEY}"
+
 # Jacpack metadata - used when packing, stripped from created projects
 [jacpack]
 name = "jac-gpt"

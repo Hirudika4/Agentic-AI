@@ -58,15 +58,14 @@ jobs:
           pip install python-dotenv requests pymongo langchain-openai langchain-community langchain-chroma pypdf sentence-transformers faiss-cpu
         working-directory: jac-gpt-fullstack
 
-      # Deploy using jac-scale
+      # Deploy using jac-scale (secrets resolved from env via [plugins.scale.secrets])
       # Code-server pattern enables seamless redeployment without destroy
       - name: Deploy JAC-GPT Fullstack with jac-scale
-        run: |
-          timeout 300 jac start main.jac --scale --experimental || echo "jac start timed out or failed health check (expected - secret not yet injected)"
-        working-directory: jac-gpt-fullstack
-        continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          jac start main.jac --scale --experimental
+        working-directory: jac-gpt-fullstack
 
       # Get deployment status
       - name: Verify deployment
