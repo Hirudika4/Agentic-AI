@@ -74,23 +74,23 @@ An intelligent, AI-powered educational assistant built with **Jac-Client** and *
 
    Install the required packages using Jac CLI:
    ```bash
-   jac add --cl
+   jac add --npm
    ```
    Or if you want to install one at a time,
    ```bash
-   jac add --cl @mui/material@7.3.5 
-   jac add --cl @mui/icons-material@7.3.5 
-   jac add --cl @mui/lab@7.0.1-beta.19
-   jac add --cl @emotion/react@11.14.0 
-   jac add --cl @emotion/styled@11.14.1
-   jac add --cl framer-motion@12.23.24
+   jac add --npm @mui/material@7.3.5 
+   jac add --npm @mui/icons-material@7.3.5 
+   jac add --npm @mui/lab@7.0.1-beta.19
+   jac add --npm @emotion/react@11.14.0 
+   jac add --npm @emotion/styled@11.14.1
+   jac add --npm framer-motion@12.23.24
    ```
    
    > **Note**: React, React-DOM, React Router, and core build tools (Vite, Babel, TypeScript) are automatically included with Jac-Client.
 
 5. **Start the application**
    ```bash
-   jac serve src/app.jac
+   jac start src/app.jac
    ```
 
 6. **Open your browser**

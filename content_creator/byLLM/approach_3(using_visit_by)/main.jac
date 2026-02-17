@@ -56,7 +56,7 @@ node PlannerAgent {
         visitor.session.current_state["planning_complete"] = True;
         
         print("Plan created, moving to writing stage");
-        visit [<--](`?Supervisor);
+        visit [<--](?:Supervisor);
     }
 }
   
@@ -82,7 +82,7 @@ node WriterAgent {
         visitor.session.current_state["review_complete"] = False;
         
         print("Content created, moving to review stage");
-        visit [<--](`?Supervisor);
+        visit [<--](?:Supervisor);
     }
 }
 
@@ -113,7 +113,7 @@ node ReviewAgent{
         
         if not content {
             print("No content to review, returning to supervisor");
-            visit [<--](`?Supervisor);
+            visit [<--](?:Supervisor);
             return;
         }
         
@@ -148,7 +148,7 @@ node ReviewAgent{
             }
         }
         
-        visit [<--](`?Supervisor);
+        visit [<--](?:Supervisor);
     }
 }
 
@@ -188,8 +188,8 @@ walker agent_executor {
         
 
     }
-    can init_graph with `root entry {
-        memory_list = [root --> (`?Memory)];
+    can init_graph with Root entry {
+        memory_list = [root --> (?:Memory)];
         if not memory_list {
             memory_list = root ++> Memory();
         }
@@ -207,7 +207,7 @@ walker agent_executor {
         
         print(f"Starting workflow for: {self.utterance}");
 
-        visit [-->](`?Supervisor) else {
+        visit [-->](?:Supervisor) else {
             router_node = here ++> Supervisor();
             router_node ++> PlannerAgent();
             router_node ++> WriterAgent(); 

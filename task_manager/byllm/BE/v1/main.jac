@@ -5,7 +5,7 @@ import smtplib;
 import os;
 include utils;
 
-glob llm = Model(model_name="gpt-4o", verbose=False);
+glob llm = Model(model_name="gpt-4o", config={"verbose": False});
 
 node Task {
     has task:str = "";
@@ -19,7 +19,7 @@ node Session {
     has history: list = [];
     has created_at: str = get_current_datetime();
     def add_history(entry: str) {
-        self.history = self.history + [entry];
+        self.history.append(entry);
     }
     def get_history -> str {
         return "\n".join(self.history[-10:]);
@@ -33,7 +33,7 @@ node TaskHandling {
         return "Task added successfully";
     }
     def check_scheduled_tasks -> list[Task] {
-        return [self --> (`?Task)];
+        return [self --> (?:Task)];
     }
     def extract_task_info(utterance: str) -> str by llm(
         method="ReAct",
@@ -50,9 +50,7 @@ node TaskHandling {
     can execute with task_manager entry {
         session = visitor.session;
         response = self.route_and_run(visitor.utterance, session.get_history());
-        session.add_history(
-            "user: " + visitor.utterance + "\nai: " + response
-        );
+        session.add_history(f"user: {visitor.utterance}\nai: {response}");
         report {
             "session_id": jid(visitor.session),
             "created_at": visitor.session.created_at,
@@ -94,9 +92,7 @@ node EmailHandling {
     can execute with task_manager entry {
         session = visitor.session;
         response = self.route_and_run(visitor.utterance, session.get_history());
-        session.add_history(
-            "user: " + visitor.utterance + "\nai: " + response
-        );
+        session.add_history(f"user: {visitor.utterance}\nai: {response}");
         report {
             "session_id": jid(visitor.session),
             "created_at": visitor.session.created_at,
@@ -122,9 +118,7 @@ node GeneralChat {
     can execute with task_manager entry {
         session = visitor.session;
         response = self.chat(visitor.utterance, session.get_history());
-        session.add_history(
-            "user: " + visitor.utterance + "\nai: " + response
-        );
+        session.add_history(f"user: {visitor.utterance}\nai: {response}");
         report {
             "session_id": jid(visitor.session),
             "created_at": visitor.session.created_at,
@@ -139,16 +133,13 @@ enum RoutingNodes{
     GENERAL_CHAT = "GeneralChat"
 }
 
-walker task_manager {
+walker:pub task_manager {
     has utterance: str = "";
     has session_id: str = "";
     
-    obj __specs__ {
-        static has auth: bool = False;
-    }
     def route_to_node(utterance: str, history: str) -> RoutingNodes by llm();
-    can execute with `root entry {
-        memory_list = [root --> (`?Memory)];
+    can execute with Root entry {
+        memory_list = [root --> (?:Memory)];
         if not memory_list {
             memory_list = root ++> Memory();
         }
@@ -165,39 +156,33 @@ walker task_manager {
             return;
         }
         node_inst = node_cls();
-        visit [-->(`?node_cls)] else {
+        visit [-->(?:node_cls)] else {
             attached_routed_node = here ++> node_inst;
             visit attached_routed_node;
         }
     }
 }
 
-walker get_all_tasks {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
-    can get_all_tasks with `root entry {
-        task_handling_node = [root --> (`?TaskHandling)];
+walker:pub get_all_tasks {
+    can get_all_tasks with Root entry {
+        task_handling_node = [root --> (?:TaskHandling)];
         if not task_handling_node {
             report "No tasks found.";
             disengage;
         }
-        report [task_handling_node[0] --> (`?Task)];
+        report [task_handling_node[0] --> (?:Task)];
     }
 }
 
-walker get_all_sessions {
-    obj __specs__ {
-        static has auth: bool = False;
-    }
-    can get_all_sessions with `root entry {
-        memory_list = [here --> (`?Memory)];
+walker:pub get_all_sessions {
+    can get_all_sessions with Root entry {
+        memory_list = [here --> (?:Memory)];
         if not memory_list {
             report "No sessions found.";
             disengage;
         }
         memory = memory_list[0];
-        session_list = [memory --> (`?Session)];
+        session_list = [memory --> (?:Session)];
         report [{
             "id": jid(session),
             "created_at": session.created_at

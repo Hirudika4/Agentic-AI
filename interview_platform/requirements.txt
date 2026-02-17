@@ -1,5 +1,6 @@
 jaclang
-jac-cloud
+jac-scale
+byllm
 python-dotenv
 openai
 fastapi

@@ -1,6 +1,6 @@
 import from byllm.llm { Model }
 
-glob llm = Model(model_name="gpt-4o-mini", verbose=False);
+glob llm = Model(model_name="gpt-4o-mini", config={"verbose": False});
 
 """
 Defines the types of agents in the system:

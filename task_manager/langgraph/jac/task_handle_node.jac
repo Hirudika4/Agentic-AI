@@ -20,7 +20,7 @@ node TaskHandling {
         return "Task added successfully";
     }
     def check_scheduled_tasks -> list[Task] {
-        return [self --> (`?Task)];
+        return [self --> (?:Task)];
     }
 }
 
@@ -69,7 +69,7 @@ def task_add_node(state: AppState) -> AppState {
         (date_full, time_only) = normalize_from_fields(date_s, time_s);
 
         # 4) Save task
-        if not [root-->(`?TaskHandling)] {
+        if not [root-->(?:TaskHandling)] {
             task_handle = root ++> TaskHandling();
         }
         print("****Task Handle:", task_handle);
@@ -89,8 +89,8 @@ def task_add_node(state: AppState) -> AppState {
 }
 
 def task_summarize_node(state: AppState) -> AppState {
-    task_handle = [root --> (`?TaskHandling)];
-    if not [root-->(`?TaskHandling)] {
+    task_handle = [root --> (?:TaskHandling)];
+    if not [root-->(?:TaskHandling)] {
         state["response"] = "No tasks found.";
         return state;
     }

@@ -2,7 +2,7 @@ import os;
 import requests;
 import from langchain_community.document_loaders {PyPDFDirectoryLoader, PyPDFLoader}
 import from langchain_text_splitters {RecursiveCharacterTextSplitter}
-import from langchain.schema.document {Document}
+import from langchain_core.documents {Document}
 import from langchain_openai {OpenAIEmbeddings}
 import from langchain_chroma {Chroma}
 

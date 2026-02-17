@@ -1,7 +1,7 @@
 import from dotenv { load_dotenv }
 import os;
 import requests;
-import from mtllm.llm { Model }
+import from byllm.llm { Model }
 import from PyPDF2 { PdfReader }
 import from io { BytesIO }
 import base64;
@@ -55,29 +55,22 @@ sem generate_next_question.history_str = "The conversation history so far, forma
 sem generate_next_question.cv_text = "The full text content of the candidate's CV or resume.";
 
 
-walker RegisterCandidatesWalker {
+walker:pub RegisterCandidatesWalker {
     has job_context: JobContext;
     has candidates: list[dict];
 
-    obj __specs__ { static has auth: bool = False; }
-
-    can execute with `root entry;
+    can execute with Root entry;
 }
 
-walker StartInterviewWalker {
+walker:pub StartInterviewWalker {
     has candidate_id: str;
 
-    obj _specs_ {
-        static has auth: bool = False;
-    }
-
-    can execute with `root entry;
+    can execute with Root entry;
 }
 
-walker SubmitAnswerWalker {
+walker:pub SubmitAnswerWalker {
     has candidate_id: str;
     has answer: str;
-    obj __specs__ { static has auth: bool = False; }
 
-    can execute with `root entry;
+    can execute with Root entry;
 }
