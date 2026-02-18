@@ -96,7 +96,7 @@ class WebSearcher {
         data: Dict[(str, Any)],
         num_results: int
     ) -> str {
-        if not isinstance(data, <>dict) {
+        if not isinstance(data, dict) {
             return 'Invalid search response format';
         }
         organic_results = data.get('organic', []);
