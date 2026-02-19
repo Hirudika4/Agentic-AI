@@ -47,11 +47,9 @@ def:pub Sidebar(
     maxFreeMessages: int = 30
 ) -> JsxElement {
 
-    # --- Responsive / visibility ---
     isDesktop = useMediaQuery("(min-width: 1024px)");
     shouldShow = isDesktop or isOpen;
 
-    # --- Local UI state ---
     has isExpanded: bool = True;
     has isAdmin: bool = False;
     has hoveredSessionId: str = "";
@@ -60,7 +58,6 @@ def:pub Sidebar(
     isAuthenticated = jacIsLoggedIn();
     username = getUsernameFromToken();
 
-    # Check admin status
     useEffect(lambda -> None {
         async def checkAdmin() -> None {
             if isAuthenticated and username and username != "Guest" {
@@ -77,17 +74,15 @@ def:pub Sidebar(
         checkAdmin();
     }, [isAuthenticated]);
 
-    # --- Theme tokens (React-like dark + orange) ---
     BG = "#141414";
-    BORDER = "#374151";  # gray-700-ish
+    BORDER = "#374151";
     TEXT = "#ffffff";
-    MUTED = "#9ca3af";   # gray-400
-    MUTED2 = "#6b7280";  # gray-500
+    MUTED = "#9ca3af";
+    MUTED2 = "#6b7280";
     PANEL = "rgba(255,255,255,0.04)";
     PANEL_BORDER = "rgba(255,255,255,0.08)";
     ORANGE = "#f97316";
 
-    # Static asset (must exist at public/logo.png)
     LOGO_SRC = "/logo.png";
 
     def toggleExpanded() -> None {
@@ -100,7 +95,6 @@ def:pub Sidebar(
     }
 
     def handleLogoClick() -> None {
-        # Reset chat state and navigate home
         if onNewChat {
             onNewChat();
         }
@@ -114,10 +108,8 @@ def:pub Sidebar(
         return "G";
     }
 
-    # Sidebar width based on expanded state
     sidebarWidth = (260 if isExpanded else 60);
 
-    # Mobile overlay (only on mobile)
     mobileOverlay = None;
     if isOpen and not isDesktop {
         mobileOverlay = <Box
@@ -131,7 +123,6 @@ def:pub Sidebar(
         />;
     }
 
-    # Sidebar container styles (always visible on desktop)
     sidebarStyle = {
         "position": "fixed",
         "left": "0",
@@ -145,7 +136,6 @@ def:pub Sidebar(
         "transform": (("translateX(0)" if shouldShow else "translateX(-100%)"))
     };
 
-    # ===== Logo section =====
     logoSection = <Box
         style={{
             "padding": "14px 14px",
@@ -155,7 +145,7 @@ def:pub Sidebar(
         <Group justify="space-between" align="center" wrap="nowrap">
             {(
                 <Group gap="sm" align="center" wrap="nowrap">
-                    <Box 
+                    <Box
                         onClick={handleLogoClick}
                         style={{
                             "width": "44px",
@@ -199,8 +189,8 @@ def:pub Sidebar(
                 </Group>
                 if isExpanded
                 else
-                <Box 
-                    mx="auto" 
+                <Box
+                    mx="auto"
                     onClick={handleLogoClick}
                     style={{
                         "width": "44px",
@@ -260,7 +250,6 @@ def:pub Sidebar(
         </Group>
     </Box>;
 
-    # ===== New Chat button (CENTERED ICON + TEXT) =====
     newChatButton = <Box px="md" py="sm">
         <Button
             onClick={onNewChat}
@@ -286,7 +275,6 @@ def:pub Sidebar(
         </Button>
     </Box>;
 
-    # ===== Chat sessions list =====
     sessionsContent = <Text size="sm" c={MUTED2} ta="center" py="lg">No chat history yet</Text>;
 
     if isExpanded and chatSessions.length > 0 {
@@ -387,7 +375,6 @@ def:pub Sidebar(
         chatSessionsList = <Box style={{"flex": "1"}} />;
     }
 
-    # ===== Authenticated section (expanded) =====
     userSection = None;
     if isAuthenticated and isExpanded {
         userSection = <Box px="md" py="sm">
@@ -443,7 +430,6 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # ===== Guest section (expanded) =====
     guestSection = None;
     if not isAuthenticated and isExpanded {
         guestSection = <Box px="md" pt="sm" pb="sm">
@@ -508,7 +494,6 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # ===== Collapsed auth buttons =====
     collapsedAuthSection = None;
     if not isExpanded {
         if isAuthenticated {
@@ -571,7 +556,6 @@ def:pub Sidebar(
         }
     }
 
-    # ===== Help button (tight spacing) =====
     helpButton = <Box px={(("md" if isExpanded else "xs"))} pt="xs" pb="sm">
         <Tooltip label="Help & FAQ" position="right" disabled={isExpanded}>
             <Button
@@ -590,7 +574,6 @@ def:pub Sidebar(
         </Tooltip>
     </Box>;
 
-    # ===== Status indicator =====
     statusIndicator = None;
     if isExpanded {
         dotColor = (("#22c55e" if isAuthenticated else ORANGE));
@@ -615,7 +598,6 @@ def:pub Sidebar(
         </Box>;
     }
 
-    # ===== Bottom area: NO auto-gap, always tight =====
     bottomArea = <Box>
         <Divider color={BORDER} />
         {userSection}
@@ -641,7 +623,6 @@ def:pub Sidebar(
             </Box>
         </Box>
 
-        # Desktop spacer so main content isn't under fixed sidebar
         <Box style={{"width": String(sidebarWidth) + "px", "flexShrink": "0"}} visibleFrom="lg" />
     </>;
 }
