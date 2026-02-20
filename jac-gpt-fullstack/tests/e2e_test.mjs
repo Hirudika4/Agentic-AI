@@ -38,17 +38,18 @@ async function call(tool, args = {}) {
 }
 
 /** Extract a ref for an element whose snapshot line matches `pattern`.
+ *  Snapshot format: `- button "Show Docs" [ref=e77] [cursor=pointer]:`
  *  If the text is on a child line (no ref), walk up to parent lines to find the ref. */
 function findRef(snapshot, pattern) {
+  const refRe = /\[ref=([^\]]+)\]/i;
   const lines = snapshot.split("\n");
   for (let i = 0; i < lines.length; i++) {
     if (lines[i].toLowerCase().includes(pattern.toLowerCase())) {
-      // Check current line for ref
-      const m = lines[i].match(/ref="?([^"\s]+)"?/i) || lines[i].match(/\[ref:\s*([^\]]+)\]/i) || lines[i].match(/ref=(\S+)/i);
+      const m = lines[i].match(refRe);
       if (m) return m[1];
       // Text found but no ref on this line — check parent lines (up to 3 above)
       for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
-        const pm = lines[j].match(/ref="?([^"\s]+)"?/i) || lines[j].match(/\[ref:\s*([^\]]+)\]/i) || lines[j].match(/ref=(\S+)/i);
+        const pm = lines[j].match(refRe);
         if (pm) return pm[1];
       }
     }
@@ -217,16 +218,13 @@ async function main() {
     // Panel renders "Popular Topics" heading when open with default suggestions
     await waitFor({ text: "Popular Topics" }, 15000);
 
-    // Close the panel — try findRef first, then fallback to JS click
+    // Close the panel — the button accessible name may not update to "Hide Docs"
+    // in the snapshot, so use JS click as the reliable approach
     s = await snap();
     const hideRef = findRef(s, "Hide Docs");
     if (hideRef) {
       await clickByRef("Hide Docs", hideRef);
     } else {
-      // Debug: log snapshot lines containing "Hide" or "Docs" to diagnose ref format
-      const relevant = s.split("\n").filter(l => /hide|docs/i.test(l));
-      console.log("    [debug] Snapshot lines matching hide/docs:", relevant);
-      // Fallback: click via JS since the button text changes from "Show Docs" to "Hide Docs"
       await call("browser_evaluate", {
         function: `() => {
           const buttons = [...document.querySelectorAll('button')];
