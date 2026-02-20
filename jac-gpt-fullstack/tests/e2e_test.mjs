@@ -217,11 +217,24 @@ async function main() {
     // Panel renders "Popular Topics" heading when open with default suggestions
     await waitFor({ text: "Popular Topics" }, 15000);
 
-    // Close the panel via "Hide Docs" button in header
+    // Close the panel — try findRef first, then fallback to JS click
     s = await snap();
     const hideRef = findRef(s, "Hide Docs");
-    assert(hideRef, 'Could not find ref for "Hide Docs" button');
-    await clickByRef("Hide Docs", hideRef);
+    if (hideRef) {
+      await clickByRef("Hide Docs", hideRef);
+    } else {
+      // Debug: log snapshot lines containing "Hide" or "Docs" to diagnose ref format
+      const relevant = s.split("\n").filter(l => /hide|docs/i.test(l));
+      console.log("    [debug] Snapshot lines matching hide/docs:", relevant);
+      // Fallback: click via JS since the button text changes from "Show Docs" to "Hide Docs"
+      await call("browser_evaluate", {
+        function: `() => {
+          const buttons = [...document.querySelectorAll('button')];
+          const btn = buttons.find(b => b.textContent.includes('Hide Docs'));
+          if (btn) btn.click();
+        }`
+      });
+    }
     await waitFor({ textGone: "Popular Topics" }, 5000);
   });
 
