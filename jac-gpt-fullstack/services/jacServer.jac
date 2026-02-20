@@ -22,7 +22,7 @@ glob services_dir: str = "./services";
 glob docs_path: str = os.path.join(services_dir, app_config.get("paths", {}).get("file_path", "docs"));
 glob faiss_path: str = os.path.join(services_dir, app_config.get("paths", {}).get("faiss_path", "faiss_index"));
 
-glob model_name: str = os.environ.get("JAC_GPT_MODEL", app_config.get("llm", {}).get("model_name", "gpt-4.1-mini"));
+glob model_name: str = os.environ.get("MODEL", app_config.get("llm", {}).get("model_name", "gpt-4.1-mini"));
 glob llm = Model(model_name=model_name);
 glob embedding_model = SentenceTransformer('all-MiniLM-L6-v2');
         
