@@ -206,16 +206,15 @@ async function main() {
     const showRef = findRef(s, "Show Docs");
     assert(showRef, 'Could not find ref for "Show Docs" button');
     await clickByRef("Show Docs", showRef);
-    await waitFor({ text: "Documentation" }, 10000);
-    await verifyText("Documentation");
+    // Panel renders "Popular Topics" heading when open with default suggestions
+    await waitFor({ text: "Popular Topics" }, 15000);
 
-    // Close the panel
+    // Close the panel via "Hide Docs" button in header
     s = await snap();
-    const hideRef = findRef(s, "Hide Docs") || findRef(s, "close") || findRef(s, "X");
-    if (hideRef) {
-      await clickByRef("Hide Docs", hideRef);
-      await waitFor({ textGone: "Documentation" }, 5000);
-    }
+    const hideRef = findRef(s, "Hide Docs");
+    assert(hideRef, 'Could not find ref for "Hide Docs" button');
+    await clickByRef("Hide Docs", hideRef);
+    await waitFor({ textGone: "Popular Topics" }, 5000);
   });
 
   await runTest("New Chat clears conversation", async () => {
