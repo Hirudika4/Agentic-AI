@@ -37,12 +37,20 @@ async function call(tool, args = {}) {
   return text || "";
 }
 
-/** Extract a ref for an element whose snapshot line matches `pattern`. */
+/** Extract a ref for an element whose snapshot line matches `pattern`.
+ *  If the text is on a child line (no ref), walk up to parent lines to find the ref. */
 function findRef(snapshot, pattern) {
-  for (const line of snapshot.split("\n")) {
-    if (line.toLowerCase().includes(pattern.toLowerCase())) {
-      const m = line.match(/ref="?([^"\s]+)"?/i) || line.match(/\[ref:\s*([^\]]+)\]/i) || line.match(/ref=(\S+)/i);
+  const lines = snapshot.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].toLowerCase().includes(pattern.toLowerCase())) {
+      // Check current line for ref
+      const m = lines[i].match(/ref="?([^"\s]+)"?/i) || lines[i].match(/\[ref:\s*([^\]]+)\]/i) || lines[i].match(/ref=(\S+)/i);
       if (m) return m[1];
+      // Text found but no ref on this line — check parent lines (up to 3 above)
+      for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
+        const pm = lines[j].match(/ref="?([^"\s]+)"?/i) || lines[j].match(/\[ref:\s*([^\]]+)\]/i) || lines[j].match(/ref=(\S+)/i);
+        if (pm) return pm[1];
+      }
     }
   }
   return null;
