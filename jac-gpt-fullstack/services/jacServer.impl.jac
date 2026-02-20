@@ -74,40 +74,81 @@ impl OffTopicChat.chat {
    report stream_chat_response(generate_response(), visitor);
 }
 
-
 glob instruction = """
-Only return one index at once. Don't return multiple indexes at same time.
-You are a message classifier for a Jac programming chatbot. Return ONLY ONE label: QA, RAG, CODING, or CODE_DEBUGGER.
+CRITICAL: You MUST return EXACTLY ONE single integer index. DO NOT return multiple indices, arrays, or lists.
+Your response MUST be a single number: 0, 1, 2, 3, or 4.
 
-CRITICAL RULES:
-- If message asks "what/how/why" about ANY technical term → RAG
-- If message contains Jac keywords → NOT QA (probably RAG)
-- Social messages (hi/thanks) with NO technical content → QA
+INDEX 2 - CODE_DEBUGGER (Error Analysis & Bug Fixes)
+TRIGGERS:
+• Error indicators: error, bug, issue, exception, traceback, stack trace, broken, not working, doesn't work, fails, failed, failing, crash, crashed, wrong output, unexpected behavior, incorrect result
+• Problem states: "why isn't", "why doesn't", "why won't", "can't get it to", "something wrong", "having trouble", "doesn't seem to", "I tried but"
+• Fix requests: fix, debug, troubleshoot, resolve, solve, repair, correct, help with error
+• Code showing problems: "this code doesn't work", "getting this error", "my code fails"
 
-1. CODE_DEBUGGER
-   - Error/problem indicators: "error", "bug", "issue", "exception", "broken", "not working", "doesn't work", "fails", "crash", "wrong output", "unexpected"
-   - Fix/debug requests: "fix", "debug", "troubleshoot", "solve", "help with"
-   - Problem context: "why isn't", "why doesn't", "something wrong", "having trouble", "I tried but"
-   - Example: "I'm getting an error", "This doesn't work", "Fix this bug", "Why isn't my code running"
+EXAMPLES: "I'm getting an error" → 2 | "This doesn't work" → 2 | "Fix this bug" → 2 | "Why isn't my walker running" → 2 | "Exception when I run this" → 2
 
-2. RAG (Technical Questions - Default)
-   - ANY question about Jac concepts, syntax, features, or documentation
-   - Question words with technical context: "what is/are", "how does/do", "explain", "tell me about", "what's"
-   - Contains Jac terminology: nodes, edges, walkers, abilities, graphs, etc.
-   - Example: "what are nodes", "how does Jac work", "explain walkers", "what is an ability"
+INDEX 1 - CODING (Code Generation & Implementation)
+TRIGGERS:
+• Creation verbs: create, write, build, generate, make, develop, implement, code, program, construct
+• Modification verbs: update, change, modify, edit, alter, refactor, rewrite, improve, optimize, add to, remove from
+• Code requests: "give me code", "show me how to code", "write a function", "implement this", "can you make", "build me"
+• Feature additions: "add a feature", "include functionality", "extend this with"
+• Examples needed: "example of", "sample code", "demonstrate with code", "code snippet for"
 
-3. CODING
-   - Requests code creation, modification, or implementation
-   - Keywords: "create", "write", "build", "update", "change", "modify", "add", "remove", "implement", "make it"
-   - Must indicate action on code
-   - Example: "Create a walker", "Add a method", "Change this to use X"
+EXAMPLES: "Create a walker for user" → 1 | "Write code to handle API" → 1 | "Build a node system" → 1 | "Generate an example" → 1 | "Add a method to" → 1 | "Show me code for" → 1
 
-4. QA (Non-Technical Only)
-   - Pure greetings: "hi", "hello", "hey", "good morning"
-   - Gratitude: "thanks", "thank you"
-   - Acknowledgements: "ok", "got it", "sure", "yes", "no"
-   - Casual conversation with NO technical words
-   - IMPORTANT: If message contains ANY Jac-related term (node, edge, walker, ability, graph, etc.), it is NOT QA
+INDEX 0 - RAG (Technical Questions & Documentation)
+TRIGGERS:
+• Question words + technical context: what, how, why, when, where, which, explain, describe, tell me about, clarify
+• Jac/Programming terms: node, edge, walker, ability, graph, syntax, feature, concept, data structure, algorithm, function, class, method, API, library, framework
+• Learning/Understanding: "how does X work", "what is Y", "explain Z", "difference between", "use case for", "purpose of"
+• Documentation queries: "documentation for", "reference for", "where to find info", "syntax for", "available methods"
+• Comparative: "difference between", "vs", "compared to", "better than"
+• Capability: "can Jac do", "is it possible to", "does Jac support"
+
+DEFAULT RULE: If message contains ANY programming/technical term AND is a question → 0
+
+EXAMPLES: "what are nodes" → 0 | "how does Jac work" → 0 | "explain walkers" → 0 | "what is an ability" → 0 | "difference between node and edge" → 0 | "Jac syntax for loops" → 0
+
+INDEX 3 - QA (Pure Non-Technical Conversation ONLY)
+ABSOLUTE REQUIREMENTS:
+1. ZERO programming/technical terms 
+2. ZERO code-related words
+3. ZERO Jac terminology
+4. Pure social interaction ONLY
+
+TRIGGERS:
+• Greetings: hi, hello, hey, good morning, good afternoon, good evening, sup, yo, greetings, howdy
+• Thanks: thanks, thank you, appreciate it, grateful, cheers, thx
+• Acknowledgements: ok, okay, got it, understood, sure, yes, yeah, yep, no, nope, right, alright, cool, awesome, great, nice
+• Farewells: bye, goodbye, see you, later, farewell, catch you later
+• Small talk: how are you, what's up, nice to meet you
+
+STRICT EXCLUSION: If message contains ANY of these → NOT QA (use 0 or 4 instead):
+• Code, program, function, method, class, variable, syntax, error, bug, node, edge, walker, ability, graph, data, API, library, framework, algorithm, structure, implement, build, create, development, software, application, system
+
+EXAMPLES: "hi" → 3 | "thanks" → 3 | "ok got it" → 3 | "good morning" → 3 | "bye" → 3
+COUNTER-EXAMPLES: "hi, how do I create a node?" → 0 (technical word present) | "thanks for the code" → 0 (code mentioned)
+
+INDEX 4 - OFF_TOPIC (Non-Programming Topics)
+TRIGGERS:
+• General knowledge: history, geography, science (non-CS), literature, arts, music
+• Current events: news, politics, sports, entertainment, celebrities
+• Personal life: food, recipes, travel, relationships, health, fitness
+• Non-Jac programming: Python basics, JavaScript general, SQL queries (unless Jac integration context)
+• Other languages/tools: specific to other languages without Jac context
+
+EXAMPLES: "what's the weather" → 4 | "who won the game" → 4 | "recipe for pasta" → 4 | "tell me about history" → 4
+
+ ROUTING DECISION TREE (Execute in order):
+1. IF (contains error/bug/crash/broken/fix/debug keywords) → RETURN 2
+2. IF (contains create/write/build/generate/implement + code context) → RETURN 1  
+3. IF (pure greeting/thanks/ack + NO technical terms) → RETURN 3
+4. IF (question + ANY programming/Jac/technical term) → RETURN 0
+5. IF (learning/explanation request about programming) → RETURN 0
+6. ELSE → RETURN 4
+
+FINAL REMINDER: Return ONLY A SINGLE INTEGER (0, 1, 2, 3, or 4). Nothing else.
 """;
 
 # - Never generate new code - only curate existing examples.
