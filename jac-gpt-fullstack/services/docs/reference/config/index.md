@@ -5,11 +5,34 @@ The `jac.toml` file is the central configuration for Jac projects. It defines pr
 ## Creating a Project
 
 ```bash
+# Basic project
 jac create myapp
+cd myapp
+
+# Full-stack web app (recommended for web development)
+jac create myapp --use client
 cd myapp
 ```
 
-This creates a `jac.toml` with default settings.
+This creates a `jac.toml` with default settings. When using `--use client`, the scaffolded project includes:
+
+```
+myapp/
+├── main.jac       # Entry point with server and client code
+├── jac.toml       # Project configuration (auto-generated)
+└── styles.css     # Default stylesheet
+```
+
+The auto-generated `jac.toml` for a `--use client` project looks like:
+
+```toml
+[project]
+name = "myapp"
+version = "0.0.1"
+entry-point = "main.jac"
+```
+
+You typically don't need to modify this file until you add dependencies or customize settings.
 
 ---
 
@@ -423,7 +446,7 @@ Most settings can be overridden via CLI flags:
 
 ```bash
 # Override run settings
-jac run main.jac --no-cache --session my_session
+jac run --no-cache --session my_session main.jac
 
 # Override test settings
 jac test --verbose --fail-fast

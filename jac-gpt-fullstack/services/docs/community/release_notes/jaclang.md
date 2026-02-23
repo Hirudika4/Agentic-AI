@@ -2,8 +2,81 @@
 
 This document provides a summary of new features, improvements, and bug fixes in each version of **Jaclang**. For details on changes that might require updates to your existing code, please refer to the [Breaking Changes](../breaking-changes.md) page.
 
-## jaclang 0.10.2 (Unreleased)
+## jaclang 0.11.1 (Unreleased)
 
+## jaclang 0.11.0 (Latest Release)
+
+- **Automatic Endpoint Caching**: The compiler now statically analyzes walker and server function bodies to classify endpoints as readers or writers, and propagates this metadata (`endpoint_effects`) through the `ClientManifest` to the client runtime. Reader endpoints are automatically cached on the client side, and writer endpoints auto-invalidate overlapping reader caches based on shared node types -- zero developer configuration required.
+- **HMR Server-Side Reloading Refactor**: Improved HMR functionality with better handling of `.impl.jac` files and optimized caching to avoid unnecessary recompilations during development
+- **Builtin `llm` Name**: `llm` is now a builtin name in the Jac runtime, enabling `by llm()` syntax without requiring an explicit import or `glob llm` declaration. The runtime provides a stub default that plugins (e.g. byllm) override with a fully configured LLM model.
+- **Fix: Impl Block Variables Lose Type Info Across Files**: Fixed a bug where variables declared with `has` (e.g., `has tasks: list = []`) in a component lost their type annotation when referenced from a separate `.impl.jac` file.
+- **Fix: Duplicate `__jacCallFunction` Import in `.cl.jac` with `.impl.jac`**: Fixed the ES codegen emitting duplicate `import { __jacCallFunction } from "@jac/runtime"` when both a `.cl.jac` file and its `.impl.jac` annex use `sv import`. Child module imports are now deduplicated by source path during merge.
+- **Variant Module Annexing (`.sv.jac`, `.cl.jac`, `.na.jac`)**: A module can now be split across variant files that are automatically discovered, compiled, and merged. Given `main.jac`, any sibling `main.sv.jac`, `main.cl.jac`, or `main.na.jac` files are annexed as variant modules with their respective code contexts (SERVER, CLIENT, NATIVE).
+- **Fix: Bare Impl Files Not Matched to Variant Modules**: Fixed `discover_annex_files` rejecting bare annex files (e.g., `foo.impl.jac`) when the source is a variant (e.g., `foo.cl.jac`) with no plain `foo.jac` head. Bare annex files now match any variant source unless a bare `.jac` head exists that would claim them.
+- **Fix: Bare-Dot Relative Import (`from . import x`) Not Resolved**: Fixed `import from . { x }` silently resolving to `UnknownType`. The import path is now computed directly from the current file's directory, ensuring sibling modules are correctly found and type-checked.
+- **Fix:**: update the jac-check command to print the file names of the files that failed to have clean error message.
+- **ES Codegen: Near-Complete Primitive Test Coverage (92%)**: Added cross-backend equivalence tests for 110 additional primitive emitter interfaces (275/299 total), covering float operators, complex arithmetic, bytes methods (with full `_jac.bytes` runtime namespace), set/frozenset algebra and operators, and extra builtins. Fixed column-aware `expandtabs` for str and bytes, `complex.pow`/`complex.eq` mixed-type handling, and `ascii()` quoting to match Python semantics.
+- **Refactor: Native Jac Generics in Primitives**: Replaced Python-style `Generic[(V, C)]` with native Jac bracket syntax `[V, C]` across all emitter classes in `primitives.jac` and removed unused `TypeVar`/`Generic` imports.
+- **Fix: `jac format` Misplaces Comments Around Generic Type Params**: Fixed `jac format` moving section comments (e.g., `# === String Types ===`) into the `[V, C]` brackets of the preceding class. The parser was generating synthetic comma tokens between type parameters with incorrect source locations; `parse_type_params` now preserves the real comma tokens from the source.
+- 4 Minor refactors/chages
+- **Native Codegen: Expanded Primitive Coverage**: Added 45 new LLVM IR emitter implementations and inline codegen across 8 emitters.
+- **Native Codegen: Expanded Primitive Coverage**: Added 17 new LLVM IR emitter implementations across 6 emitters: IntEmitter (`conjugate`, `bit_length`, `bit_count`), FloatEmitter (`conjugate`, `is_integer`, `op_floordiv`), StrEmitter (`title`, `rfind`, `ljust`, `rjust`, `zfill`), SetEmitter (`clear`, `discard`, `copy`), ListEmitter (`extend`, `insert`), and BuiltinEmitter (`bool`). Fixed string comparison operators (`<`, `>`, `<=`, `>=`) via `strcmp` and added float floor division (`fdiv` + `floor`). Fixed `rfind` infinite loop on empty substring. 108/299 implemented (36%), 105/299 tested (35%).
+- **ES Codegen: Comprehension Support (Set, Dict, Nested Loops)**: Added `SetCompr` → `new Set(...)`, `DictCompr` → `Object.fromEntries(...)`, and nested loop → `.flatMap()` chain support to the ES transpile pass. Fixed arrow function parenthesization for destructuring params (`([k, v]) => ...`). Includes 17 new test cases covering all comprehension types.
+- **Fix: Walker `result.reports` in CLI Mode**: Fixed `report` keyword not populating `result.reports` when running walkers via `jac run` or `jac test`.
+- **`jac format` Support for Generic Syntax**: `jac format` now correctly handles native generic type parameters (`class Foo[V, C]`) and type aliases (`type Result[T, E] = T | E;`). Previously, formatting would lose type parameter names and produce broken output.
+- **Bootstrap Compiler (jac0) Native Generic Support**: Extended the jac0 bootstrap transpiler to parse and emit PEP 695 generic class syntax (`class Foo[T, V](Base)`) and type alias statements (`type Alias[T] = Expr`), enabling jac0core infrastructure files to use native Jac generics instead of Python-style `Generic[T]`/`TypeVar` patterns.
+- **Migrate jac0core and Compiler Passes to Native Generics**: Replaced `Generic[(T, V)]` inheritance and `TypeVar` declarations with native `[T, V]` syntax across `transform.jac`, `unitree.jac`, `base_ast_gen_pass.jac`, and all `Transform[(X, Y)]` subscription sites in the compiler pipeline.
+
+## jaclang 0.10.5
+
+- **Fix: `sv import` of `def:pub` Functions Generates RPC Stubs**: Fixed `sv import from module { func }` in `.cl.jac` files not generating for `def:pub` server functions.
+- **Fix: Type Narrowing Infinite Loop on Large Files**: Fixed `jac check` hanging indefinitely on large `.jac` files (e.g. standalone `.impl.jac` modules). The backward CFG walk in `_compute_narrowed_at` had no depth bound, causing combinatorial explosion when the module-level CFG contained hundreds of basic blocks. Added a depth limit to the walk; narrowing beyond the limit conservatively returns the declared type.
+
+## jaclang 0.10.4
+
+- **`jac check/lint --ignore` Multi-Arg & Wildcard Support**: Enhanced `--ignore` flag to accept multiple space-separated patterns (`--ignore dir1 dir2 dir3`) instead of comma-separated strings. Added wildcard support using glob patterns (e.g., `--ignore "jac-*" test`) for flexible directory matching.
+- **CI: Type Check All Jac Files**: Updated CI workflow to run `jac check` on all `.jac` files (excluding test fixtures and error cases) in preparation for removing `.jacignore`.
+- **Fix: `_jac` ES Runtime Correctness**: Fixed `str.split` with `maxsplit` to keep the remainder (matching Python behavior), `dict.eq` to compare key-by-key instead of order-dependent `JSON.stringify`, and builtin dispatch (e.g., `sorted(key=lambda...)`) to correctly pass keyword arguments to the runtime.
+- **Fix: Remove Dead `abs` Prefix Modifier**: Removed the unused `abs` prefix on archetypes (`abs obj Foo { }`) from the grammar and parser. The prefix was parsed but silently discarded; archetype abstractness is computed from contained abstract abilities. The `abs` keyword remains valid only as an ability body terminator (`can foo() abs;`).
+- **ES Codegen: Expanded Primitive Coverage**: Added `bool()` with Python truthiness semantics (empty list/dict/set are falsy), `range()` builtin (supports `for i in range(n)`), `slice()` constructor, `bytearray()` constructor, dedicated `BoolEmitter` for correct `&`/`|`/`^` bool-returning bitwise ops, enhanced `format()` with format-spec support (`f`, `d`, `b`, `o`, `x`, `e`, `%`, width, alignment), and fixed `int()` to handle booleans and floats correctly via `Math.trunc(Number(x))`.
+- **Fix: Lexer Infinite Loop on Malformed JSX**: Fixed three infinite-loop scenarios where the lexer would hang forever when hitting EOF inside a non-NORMAL mode (JSX content, JSX tag, or f-string). Added a stuck detector in `tokenize()` that forces EOF when the lexer stops advancing or overshoots the source, preventing `jac run`, `jac start`, and `jac js` from hanging on malformed input (e.g., unterminated JSX like `<div>hello` with no closing tag).
+- **Fix: Bare `<` in JSX Content No Longer Hangs Lexer**: A `<` character in JSX content that does not start a valid tag (e.g., `<--`) is now consumed as text instead of causing an infinite loop. The text scanner only breaks on `<` when the next character forms a real JSX construct (`</`, `<>`, or `<` + identifier).
+- **Fix: Grammar Extraction Accuracy**: Fixed multiple issues in `jac grammar` output: `atomic_chain` and `jsx_attributes` now show `*` repetition, `compare` no longer duplicates operators, `assignment_with_target` correctly extracts ternary expressions, excessive top-level `?` wrapping is stripped from multi-branch rules, f-string tokens use proper quoting, and added `GPlus` (one-or-more `+`) grammar expression type.
+- 1 Minor refactors/chages
+
+## jaclang 0.10.3
+
+- **Fix: Type Narrowing in Loops**: Fixed type narrowing loss in loops and also improved CFG accuracy.
+- **Fix: Config Discovery from Target File Path**: Fixed `jac start` commands to discover `jac.toml` from the target file's directory instead of the current working directory when using absolute/relative paths.
+- **Fix: Unbound Method Call Type Checking**: Fixed "Parameter already matched" error when calling parent class methods with explicit `self` in inheritance patterns (e.g., `ParentClass.init(self, name=name)`). The type checker now correctly handles unbound method calls on `obj`/`node`/`walker`/`edge` types where `self` is implicit.
+- **Enhanced Type Narrowing**: Extended CFG-based type narrowing to support additional patterns: parenthesized isinstance `(isinstance(x, T))`, NOT expressions `not isinstance(x, T)`, compound AND/OR conditions, isinstance with tuple of types `isinstance(x, (A, B))`, truthiness narrowing `if x:` (excludes None), literal equality `x == "lit"`, and inheritance-aware isinstance that correctly narrows to subclasses in unions.
+- **Fix: Bare Callable Type Annotation**: Using `Callable` without type parameters (e.g., `fn: Callable`) no longer causes type errors.
+- **Type Inference for Tuple Unpacking**: The type evaluator now infers element types for variables in tuple/list unpacking assignments (e.g., `(row, col) = pos;` where `pos: tuple[int, int]`), eliminating the need for explicit pre-declarations before unpacking. Types that cannot be inferred still require explicit annotations.
+- **Fix: Display detailed syntax error messages**: Display detailed syntax error messages in `jac run` and `jac start` commands instead of generic import errors.
+- **Enum Type Checking**: Enums now have proper type checking. Accessing `.name` returns `str`, `.value` returns the correct type based on your enum values (int or str). Passing wrong types to functions expecting enums now shows type errors.
+- **Fix: False type errors on class-based enums**: Classes inheriting from `StrEnum`, `IntEnum`, or `IntFlag` no longer produce false type errors.
+- **Fix: LSP features in nested impl blocks**: Go-to-definition, hover, and syntax highlighting now work correctly for symbols inside if/while/for statements within impl blocks.
+- **Fix: JS useState scope bug**: Fixed `has` vars incorrectly triggering `setState()` in sibling functions with same variable name.
+- **Fix: Inherited field default override**: Fixed false "missing required parameter" error when a child class provides a default for a parent's required field.
+- **`parametrize()` Test Helper**: Added a `parametrize(base_name, params, test_func, id_fn=None)` runtime helper that registers one test per parameter via `JacTestCheck.add_test()`.
+- **Generic Primitive Emitter Interface**: Refactored the primitive codegen emitter contracts. Emitters are now stateless singletons with per-call context, and dispatch uses typed instance methods instead of static class-as-namespace calls.
+- **Human-Readable Tokens in Errors and Grammar Spec**: Parser error messages and `jac grammar` output now display actual token text (`"{"`, `"if"`, `";"`) instead of internal names (`LBRACE`, `KW_IF`, `SEMI`), making syntax errors and the grammar specification much more readable.
+- **Support Bare `type` Parameter Assignment**: Functions with `type` parameter annotations now correctly accept class types as arguments (e.g., `process(cls: type)` can be called with `process(MyClass)`).
+- **Operator Primitive Dispatch for ES Codegen**: Wired type-aware operator dispatch into the JavaScript code generation pass. Binary, comparison, unary, and augmented assignment operators now query the type evaluator and delegate to the appropriate primitive emitter, producing correct JS semantics for Python-style operators (e.g., `list + list` emits spread concatenation `[...a, ...b]`, `str * n` emits `.repeat(n)`, `x in list` emits `.includes(x)`).
+- 3 Minor refactors/changes.
+- **Fix: Lexer `<` Comparison vs JSX Tag Disambiguation**: Fixed an infinite loop where `i<points` in a for-loop caused the lexer to enter JSX tag mode. The lexer now tracks the previous token to distinguish `<` as a comparison operator (after values) from a JSX opening tag (after keywords like `return`, operators, or delimiters).
+- **Fix: Quoted JSX Text Produces Invalid JS**: Fixed JSX text containing quote characters (e.g., `<p>"text"</p>`) generating invalid double-double-quoted JavaScript (`""text""`). Inner quotes are now properly escaped in the emitted JS string literals.
+- **Fix: `unittest.mock.patch` Compatibility in Jac Tests**: Fixed `unittest.mock.patch` not intercepting calls in Jac test blocks.
+- **Modern Generics: `type` Aliases & Inline Type Parameters**: Added PEP 695-style `type` alias statements (`type JsonPrimitive = str | int | float | bool | None;`) and inline generic type parameters on archetypes (`obj Result[T, E = Exception] { ... }`). Supports bounded type vars (`T: Comparable`), default type values, and recursive type aliases. Compiles to native Python 3.12 `ast.TypeAlias` and `ast.TypeVar` nodes.
+- **Perf: Precompiled Bytecode for Zero Cold Start**: Ship precompiled `.jbc` bytecode per Python version (3.12, 3.13, 3.14) inside each Jac package wheel. Cold start (`jac purge && jac --help`) drops from ~29s to <1s.
+- **`jac run` Script Arguments**: `jac run` now passes arguments to the script using Python-like semantics - everything after the filename goes to the script (e.g., `jac run script.jac arg1 arg2`), accessible via `sys.argv[1:]`. Jac flags like `--no-cache` must come before the filename, just like `python -O script.py`.
+- **Fix: Operator Precedence for Bitwise vs Logical Operators**: Fixed operator precedence so bitwise operators (`|`, `^`, `&`, `<<`, `>>`) bind tighter than logical operators (`or`, `and`, `not`), matching Python's semantics. Previously `3 & 1 == 1` was parsed as `3 & (1 == 1)` instead of `(3 & 1) == 1`.
+- **Fix: `_jac` Primitive Runtime for ES Codegen**: Fixed unification of compiled JavaScript that uses Python-like primitive operations (`list.sort(key=...)`, `list.count()`, `str.capitalize()`, `int % int`, etc.).
+- 2 Minor refactors/changes.
+
+## jaclang 0.10.2
+
+- **Unified Primitive Codegen Interface**: Added abstract emitter contracts (`primitives.jac`) for all Jac primitive type methods and builtin functions. Each compilation backend (Python, ECMAScript, Native) must implement these interfaces, ensuring consistent primitive support across all code generation pathways. Python, JS, and Native backend implementations provided.
 - **Pytest Plugin for Native Jac Tests**: Added a `pytest11` entry-point plugin (`jaclang.pytest_plugin`) that discovers and runs `test` blocks in `.jac` files alongside Python tests with zero configuration. Migrated ~79 language integration tests and 8 compilation tests from Python to native Jac `test` keyword.
 - **Perf: Bootstrap Bytecode Cache**: Cache the jac0-transpiled bytecode for jac0core modules on disk, eliminating ~200ms of repeated transpilation on every invocation. `jac purge -f` clears both caches.
 - **Perf: Cache `len()` in Lexer/Parser Hot Paths**: Cached source and token list lengths in the jac0 bootstrap transpiler and the RD parser/lexer, eliminating ~1.8M redundant `len()` calls per startup.
@@ -11,9 +84,10 @@ This document provides a summary of new features, improvements, and bug fixes in
 - **Fix: `jac grammar` Command Broken Path**: Fixed the `jac grammar` CLI command.
 - **Grammar Extraction Pass Improvements & Spec Snapshot Test**: Improved `jac grammar` extraction accuracy for negated-check loops, optional dispatch branches, `while True` parse-and-break patterns, and standalone `match_tok` calls. Added a golden-file snapshot test (`jac.spec`) that validates extracted grammar rules against a checked-in spec, catching unintended grammar drift on every CI run.
 - **Black-style Grammar Formatting**: Replaced alignment-based `jac grammar` formatting with Black-style fixed 4-space indentation, blank lines between rules, and 88-char line width. Uses a recursive tree-based formatter instead of the previous string-based wrapping.
+- **RD Parser Spec Convergence**: Improved strictness of jac parser and specification.
 - 4 Minor refactors/changes.
 
-## jaclang 0.10.1 (Latest Release)
+## jaclang 0.10.1
 
 - **`jac purge` Command**: Added `jac purge` to clear the bytecode cache. Works even when the cache is corrupted.
 - **`format_build_error` Plugin Hook**: Added `format_build_error(error_output, project_dir, config)` hook to `JacMachineInterface`, allowing plugins to provide custom error formatting for client bundle build failures. The default implementation returns raw error output; plugins like `jac-client` can override to display structured diagnostics.
@@ -30,6 +104,7 @@ This document provides a summary of new features, improvements, and bug fixes in
 - **`jac --version` Shows Installed Plugins**: The version banner now lists all installed Jac plugins with their versions, making it easy to see the full environment at a glance.
 - **Support Go to Definition for Inherited Members**: "Go to Definition" now works correctly for inherited methods and attributes on classes without an explicit parent class.
 - **Type Checker Improvements**:
+  - **Callable Type Annotation Support**: Added full support for `Callable[[ParamTypes], ReturnType]` type annotations. Includes gradual callable form (`Callable[..., T]`), parameter contravariance, return type covariance, automatic self/cls filtering for methods and classmethods, and validation that extra source parameters have defaults.
   - **Fix: Type Checker Crashes**: Fixed crashes when type-checking default/star imports (`import from mod { default as X }`) and walker entry/exit handlers.
   - **Fix: LiteralString Type Support**: Added `LiteralString` class to the type checker, improving binary operator chain handling and ensuring type compatibility between `LiteralString` and `str` types.
   - **Type Checking for `super.init()` Calls**: Added validation for `super.init()` calls, catching argument errors against parent class initializers with proper MRO resolution.

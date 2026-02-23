@@ -2,32 +2,62 @@
 
 This document provides a summary of new features, improvements, and bug fixes in each version of **Jac-Scale**. For details on changes that might require updates to your existing code, please refer to the [Breaking Changes](../breaking-changes.md) page.
 
-## jac-scale 0.1.9 (Unreleased)
+## jac-scale 0.2.1 (Unreleased)
 
+## jac-scale 0.2.0 (Latest Release)
+
+- **SSO Frontend Callback Redirect**: SSO callback endpoints now support automatic redirection to frontend applications. Configure `client_auth_callback_url` in `jac.toml` to redirect with token/error parameters instead of returning JSON, enabling seamless browser-based OAuth flows.
+- **Graph Visualization Tests**: Added tests for `/graph` and `/graph/data` endpoints.
+
+## jac-scale 0.1.6
+
+## jac-scale 0.1.9
+
+- **Refactor: Modular JacAPIServer Architecture**: Split the monolithic `serve.impl.jac` into three focused impl files using mixin composition:
+  - `serve.core.impl.jac`: Auth, user management, JWT, API keys, server start/postinit
+  - `serve.endpoints.impl.jac`: Walker, function, webhook, WebSocket endpoint registration
+  - `serve.static.impl.jac`: Static files, pages, client JS, graph visualization
+- **Fix: `@restspec` Path Parameters**: Resolved a critical bug where using `@restspec` with URL path parameters (e.g. `path="/items/{item_id}"`) caused the server to crash on startup with `Cannot use 'Query' for path param 'id'`. Both functions and walkers with `@restspec` path templates now correctly annotate matching parameters as `Path()` instead of `Query()`. Mixed usage (path params alongside query params or body params) works correctly across GET and POST methods. Starlette converter syntax (e.g. `{file_path:path}`) is also handled.
+
+## jac-scale 0.1.11
+
+- **Graph Visualization Endpoint (`/graph`)**: Added a built-in `/graph` endpoint that serves an interactive graph visualization UI in the browser.
+
+## jac-scale 0.1.10
+
+- **support horizontal scaling**:  based on average cpu usage k8s pods are horizontally scaled
+- **Client Build Error Diagnostics**: Build errors now display formatted diagnostic output with error codes, source snippets, and quick fix suggestions instead of raw Vite/Rollup output. Uses the `jac-client` diagnostic engine for consistent error formatting across `jac start` and `jac build`.
+
+## jac-scale 0.1.9
+
+- **Remove Authorization header input from Swagger UI**: The `Authorization` header is no longer exposed as a visible text input field in Swagger UI for walker, function, and API key endpoints. Authentication tokens are now read transparently from the standard `Authorization` request header (accessible via the lock icon), consistent with the `update_username` and `update_password` endpoints.
 - 1 Minor refactors/changes.
 
-## jac-scale 0.1.8 (Latest Release)
+## jac-scale 0.1.8
 
 - Internal: K8s integration tests now install jac plugins from fork PRs instead of always using main
 - **.jac folder is excluded when creating the zip folder that is uploaded into jaseci deployment pods.Fasten up deployment**
 - **Fix: `jac start` Startup Banner**: Server now displays the startup banner (URLs, network IPs, mode info) correctly via `on_ready` callback, consistent with stdlib server behavior.
 - Various refactors
 - **PWA Build Detection**: Server startup now detects existing PWA builds (via `manifest.json`) and skips redundant client bundling. The `/static/client.js` endpoint serves Vite-hashed files (`client.*.js`) in PWA mode.
-- **Prometheus Metrics Integration**: Added `/metrics` endpoint with HTTP request metrics, configurable via `[plugins.scale.metrics]` in `jac.toml`.
+- **Prometheus Metrics Integration**: Added `/metrics` endpoint with HTTP request metrics, configurable via `[plugins.scale.metrics]
+` in `jac.toml`.
 - Update jaseci scale k8s pipeline to support parellel test cases.
 - **early exit from k8s deployment if container restarted**
 - **Direct Database Access (`kvstore`)**: Added `kvstore()` function for direct MongoDB and Redis operations without graph layer. Supports database-specific methods (MongoDB: `find_one`, `insert_one`, `update_one`; Redis: `set_with_ttl`, `incr`, `scan_keys`) with common methods (`get`, `set`, `delete`, `exists`) working across both. Import from `jac_scale.lib` with URI-based connection pooling and configuration fallback (explicit URI → env vars → jac.toml).
 - **Code refactors**: Backtick escape, etc.
+- **Persistent Webhook API Keys**: Webhook API key metadata is now stored in MongoDB (`webhook_api_keys` collection) instead of in-memory dictionaries. API keys now survive server restarts.
 - **Native Kubernetes Secret support**: New `[plugins.scale.secrets]` config section. Declare secrets with `${ENV_VAR}` syntax, auto-resolved at deploy time into a K8s Secret with `envFrom.secretRef`.
 - **Minor Internal Refactor in Tests**: Minor internal refactoring in test_direct.py to improve test structure
 - **fix**: Return 401 instead of 500 for deleted users with valid JWT tokens.
 - Docs update: return type `any` -> `JsxElement`
 - **1 Small Refactors**
+- **promethius and grafana deployment**: Jac-scale automatically deploys promethius and grafana and connect with metrics endpoint.
 
 ## jac-scale 0.1.7
 
 - **KWESC_NAME syntax changed from `<>` to backtick**: Updated keyword-escaped names from `<>` prefix to backtick prefix to match the jaclang grammar change.
-- **Update syntax for TYPE_OP removal**: Replaced backtick type operator syntax (`` `root ``) with `Root` and filter syntax (`` (`?Type) ``) with `(?:Type)` across all docs, tests, examples, and README.
+- **Update syntax for TYPE_OP removal**: Replaced backtick type operator syntax (`` `root ``) with `Root` and filter syntax (``(`?Type)``) with `(?:Type)` across all docs, tests, examples, and README.
 
 ## jac-scale 0.1.6
 
