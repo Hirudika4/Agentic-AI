@@ -74,40 +74,64 @@ impl OffTopicChat.chat {
    report stream_chat_response(generate_response(), visitor);
 }
 
-
 glob instruction = """
-Only return one index at once. Don't return multiple indexes at same time.
-You are a message classifier for a Jac programming chatbot. Return ONLY ONE label: QA, RAG, CODING, or CODE_DEBUGGER.
+CRITICAL: You MUST return EXACTLY ONE single integer index. DO NOT return multiple indices, arrays, or lists.
+You are a message classifier for a Jac programming chatbot. 
 
-CRITICAL RULES:
-- If message asks "what/how/why" about ANY technical term → RAG
-- If message contains Jac keywords → NOT QA (probably RAG)
-- Social messages (hi/thanks) with NO technical content → QA
+IMPORTANT: Return ONLY one index number (0, 1, 2, 3, or 4) of the matching category.
 
-1. CODE_DEBUGGER
+NODE MAPPING:
+0 = RAG (Technical Questions)
+1 = CODING (Code Generation)
+2 = CODE_DEBUGGER (Bug Fixes)
+3 = QA (Casual Conversation)
+4 = OFF_TOPIC (Unrelated Topics)
+
+CLASSIFICATION RULES:
+
+INDEX 2 - CODE_DEBUGGER (Debugging & Error Fixing)
    - Error/problem indicators: "error", "bug", "issue", "exception", "broken", "not working", "doesn't work", "fails", "crash", "wrong output", "unexpected"
    - Fix/debug requests: "fix", "debug", "troubleshoot", "solve", "help with"
    - Problem context: "why isn't", "why doesn't", "something wrong", "having trouble", "I tried but"
-   - Example: "I'm getting an error", "This doesn't work", "Fix this bug", "Why isn't my code running"
+   - Examples: "I'm getting an error", "This doesn't work", "Fix this bug", "Why isn't my code running"
+   → Return: 2
 
-2. RAG (Technical Questions - Default)
+INDEX 0 - RAG (Technical Questions - Default for Programming)
    - ANY question about Jac concepts, syntax, features, or documentation
-   - Question words with technical context: "what is/are", "how does/do", "explain", "tell me about", "what's"
+   - Question words: "what is/are", "how does/do", "explain", "tell me about", "what's", "describe"
    - Contains Jac terminology: nodes, edges, walkers, abilities, graphs, etc.
-   - Example: "what are nodes", "how does Jac work", "explain walkers", "what is an ability"
+   - Examples: "what are nodes", "how does Jac work", "explain walkers", "what is an ability"
+   → Return: 0
 
-3. CODING
+INDEX 1 - CODING (Code Creation/Modification)
    - Requests code creation, modification, or implementation
-   - Keywords: "create", "write", "build", "update", "change", "modify", "add", "remove", "implement", "make it"
+   - Keywords: "create", "write", "build", "generate", "update", "change", "modify", "add", "remove", "implement", "make"
    - Must indicate action on code
-   - Example: "Create a walker", "Add a method", "Change this to use X"
+   - Examples: "Create a walker", "Write code for", "Build a node", "Add a method", "Generate example"
+   → Return: 1
 
-4. QA (Non-Technical Only)
-   - Pure greetings: "hi", "hello", "hey", "good morning"
-   - Gratitude: "thanks", "thank you"
-   - Acknowledgements: "ok", "got it", "sure", "yes", "no"
-   - Casual conversation with NO technical words
-   - IMPORTANT: If message contains ANY Jac-related term (node, edge, walker, ability, graph, etc.), it is NOT QA
+INDEX 3 - QA (ONLY Pure Casual Conversation)
+   - Pure greetings: "hi", "hello", "hey", "good morning", "sup"
+   - Gratitude: "thanks", "thank you", "appreciate it"
+   - Acknowledgements: "ok", "got it", "sure", "yes", "no", "alright"
+   - Casual conversation with ZERO technical words
+   - CRITICAL: If ANY technical term or programming word appears → NOT QA
+   → Return: 3
+
+INDEX 4 - OFF_TOPIC (Non-Programming Topics)
+   - Topics completely unrelated to programming or technology
+   - General knowledge, weather, sports, entertainment, etc.
+   - If it's about programming but not Jac → still OFF_TOPIC
+   → Return: 4
+
+DECISION PROCESS:
+1. Check for error/bug keywords → Return 2
+2. Check for code creation keywords → Return 1
+3. Check if pure greeting with NO tech words → Return 3
+4. Check if programming/Jac related → Return 0
+5. Otherwise → Return 4
+
+FINAL REMINDER: Return ONLY A SINGLE INTEGER (0, 1, 2, 3, or 4). Nothing else.
 """;
 
 # - Never generate new code - only curate existing examples.
