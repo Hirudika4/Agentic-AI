@@ -160,7 +160,7 @@ class GeniusAgent {
         issues = [];
         if (self.coder.auto_lint and self.coder.abs_fnames ) {
             try {
-                for fname in <>list(self.coder.abs_fnames) {
+                for fname in `list(self.coder.abs_fnames) {
                     lint_result = self.coder.linter.lint(fname);
                     if lint_result {
                         issues.append(
@@ -684,7 +684,7 @@ class GeniusAgent {
             queries.append(f" 'python error solution ' {error_key_terms} ");
         }
         unique_queries = [];
-        seen = <>set();
+        seen = `set();
         for query in queries {
             if (query.lower() not in seen) {
                 unique_queries.append(query);
@@ -711,7 +711,7 @@ class GeniusAgent {
                 'Checking code style and syntax'
             );
             try {
-                self.coder.commands.cmd_lint(fnames=<>list(self.coder.abs_fnames));
+                self.coder.commands.cmd_lint(fnames=`list(self.coder.abs_fnames));
                 lint_passed = (self.coder.lint_outcome is not False);
                 validation_results['lint_passed'] = lint_passed;
                 if not lint_passed {
@@ -815,7 +815,7 @@ class GeniusAgent {
 
     """Generate a comprehensive report of the agent's work"""
     def generate_report(self: Any) -> str {
-        <>report =
+        `report =
 
             ['Genius Agent Execution Report',
             ('=' * 40),
@@ -826,16 +826,16 @@ class GeniusAgent {
             '',
             'Completed Tasks:'];
         for task in self.completed_tasks {
-            <>report.append(f" '  ' {task['name']} ");
+            `report.append(f" '  ' {task['name']} ");
         }
         if self.failed_tasks {
-            <>report.append('\nFailed Tasks:');
+            `report.append('\nFailed Tasks:');
             for task in self.failed_tasks {
-                <>report.append(f" '  ' {task['name']} ");
+                `report.append(f" '  ' {task['name']} ");
             }
         }
         if self.validation_results {
-            <>report.extend(
+            `report.extend(
 
                 ['\nFinal Validation Results:',
                 f" '  Lint: ' {'✅' if self.validation_results['lint_passed'] else '❌'} ",
@@ -843,7 +843,7 @@ class GeniusAgent {
                 f" '  Security: ' {'✅' if self.validation_results['security_passed'] else '❌'} "]
             );
         }
-        return '\n'.join(<>report);
+        return '\n'.join(`report);
     }
 
     """Main execution loop for the Genius Agent. Implements the complete agent architecture with feedback loops."""
@@ -901,8 +901,8 @@ class GeniusAgent {
                 self._handle_validation_failure(current_task, validation_details);
             }
         }
-        <>report = self.generate_report();
-        self.coder.io.tool_output(<>report);
+        `report = self.generate_report();
+        self.coder.io.tool_output(`report);
         success =
             ((len(self.completed_tasks) > 0)
             and (not self.validation_results
@@ -976,7 +976,7 @@ class GeniusAgent {
 """Legacy wrapper for backwards compatibility"""
 class GeniusMode(GeniusAgent) {
     def __init__(self: Any, coder: Any, task: Any = None, max_iterations: Any = 5) {
-        <>super().init(coder, task, max_iterations);
+        `super().init(coder, task, max_iterations);
     }
 }
 

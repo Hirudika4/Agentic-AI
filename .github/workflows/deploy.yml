@@ -45,10 +45,12 @@ jobs:
           python-version: '3.12'
 
       # Install required packages (including app dependencies for local validation)
+      # Install jac-scale from main to get code-server horizontal scaling support
       - name: Install Jaseci packages
         run: |
           pip install --upgrade pip
-          pip install jaclang jac-client jac-scale byllm
+          pip install jaclang jac-client byllm
+          pip install git+https://github.com/jaseci-labs/jaseci.git@main#subdirectory=jac-scale
 
       # Install app dependencies (required for jac start to validate main.jac locally)
       - name: Install app dependencies
@@ -56,38 +58,14 @@ jobs:
           pip install python-dotenv requests pymongo langchain-openai langchain-community langchain-chroma pypdf sentence-transformers faiss-cpu
         working-directory: jac-gpt-fullstack
 
-      # Destroy existing deployment
-      - name: Destroy existing deployment
-        run: |
-          jac destroy main.jac || echo "No existing deployment to destroy"
-          sleep 15
-        continue-on-error: true
-        working-directory: jac-gpt-fullstack
-
-      # Deploy using jac-scale (will fail health check without OPENAI_API_KEY, that's expected)
+      # Deploy using jac-scale (secrets resolved from env via [plugins.scale.secrets])
+      # Code-server pattern enables seamless redeployment without destroy
       - name: Deploy JAC-GPT Fullstack with jac-scale
-        run: |
-          timeout 300 jac start main.jac --scale || echo "jac start timed out or failed health check (expected - secret not yet injected)"
-        working-directory: jac-gpt-fullstack
-        continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      # Create API keys secret
-      - name: Create API keys secret
         run: |
-          kubectl create secret generic jac-gpt-api-keys \
-            --namespace=jac-gpt-test \
-            --from-literal=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      # Inject secret into deployment and wait for healthy rollout
-      - name: Inject API keys into deployment
-        run: |
-          kubectl patch deployment jac-gpt-test -n jac-gpt-test --type='json' \
-            -p='[{"op": "add", "path": "/spec/template/spec/containers/0/envFrom", "value": [{"secretRef": {"name": "jac-gpt-api-keys"}}]}]'
-          echo "Waiting for rollout with secret..."
-          kubectl rollout status deployment/jac-gpt-test -n jac-gpt-test --timeout=600s
+          jac start main.jac --scale --experimental
+        working-directory: jac-gpt-fullstack
 
       # Get deployment status
       - name: Verify deployment

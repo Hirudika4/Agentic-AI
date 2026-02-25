@@ -8,7 +8,7 @@ import from pathlib { Path }
 import from typing { Any, Dict, List, Optional, Tuple }
 import from aider.web_search { web_search, create_web_searcher }
 import from mcp_client { list_mcp_tools, call_mcp_tool }
-import from byllm {Model}
+import from byllm.lib {Model}
 
 glob llm = Model(model_name="gpt-4o-mini");
 
@@ -771,7 +771,7 @@ walker GeniusAgent {
     has planning_complete: bool = False;
 
     # Initialize the agent and start at root
-    can start with `root entry {
+    can start with Root entry {
         # Set up planning and editor models first
         self.planning_model = Model(model_name="gpt-4.1-mini");
         self.editor_model = Model(model_name="gpt-4.1-mini");

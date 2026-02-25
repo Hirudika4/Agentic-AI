@@ -14,7 +14,7 @@ cd Agentic-AI/jac-gpt-fullstack
 2. Install dependencies:
 
 ```bash
-jac add
+jac install
 ```
 
 3. Set environment variables:

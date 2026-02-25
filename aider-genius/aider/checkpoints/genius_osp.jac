@@ -5,7 +5,7 @@ import re;
 import from pathlib { Path }
 import from typing { Any, Dict, List, Optional, Tuple }
 import from aider.web_search { web_search, create_web_searcher }
-import from mtllm {Model}
+import from byllm.lib {Model}
 
 with entry {
     try {
@@ -994,7 +994,7 @@ walker GeniusAgent {
     has planning_complete: bool = False;
 
     # Initialize the agent and start at root
-    can start with `root entry {
+    can start with Root entry {
         # Initialize web searcher if available
         if WEB_SEARCH_AVAILABLE and create_web_searcher {
             self.web_searcher = create_web_searcher(print_error=self.coder.io.tool_error);
