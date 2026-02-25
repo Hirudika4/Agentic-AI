@@ -402,7 +402,7 @@ def:pub Sidebar(
 
                 {(
                     <Button
-                        onClick={lambda -> None { navigate("/admin"); }}
+                        onClick={lambda -> None { navigate("/dashboard"); }}
                         variant="subtle"
                         fullWidth
                         size="xs"
@@ -501,7 +501,7 @@ def:pub Sidebar(
                 {(
                     <Tooltip label="Admin Dashboard" position="right">
                         <ActionIcon
-                            onClick={lambda -> None { navigate("/admin"); }}
+                            onClick={lambda -> None { navigate("/dashboard"); }}
                             variant="subtle"
                             size="lg"
                             radius="md"
