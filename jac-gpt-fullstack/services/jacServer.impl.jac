@@ -116,7 +116,7 @@ INDEX 4 - OFF_TOPIC (Non-Jac Topics)
    - Examples: "What's the weather?", "How do I do this in Python?"
    → Return: 4
 
-FINAL REMINDER: Return ONLY A SINGLE INTEGER (0, 1, 2, 3, or 4). Nothing else.
+FINAL REMINDER: Return ONLY A SINGLE INTEGER (0, 1, 2, 3, or 4). Nothing else
 """;
 
 # - Never generate new code - only curate existing examples.
