@@ -208,12 +208,12 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = null) -> JsxEle
 
     # Bot message: Markdown enabled
     components = {
-        "code": lambda props: any -> any {
+        "code": lambda p: any -> any {
             console.log("=== Code component called ===");
-            console.log("Props:", props);
+            console.log("Props:", p);
             
-            className = props.className or "";
-            children = props.children;
+            className = p.className or "";
+            children = p.children;
             isInline = not className.includes("language-");
 
             console.log("className:", className);
@@ -266,75 +266,75 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = null) -> JsxEle
             </Code>;
         },
 
-        "h1": lambda props: any -> any {
+        "h1": lambda p: any -> any {
             return <Text size="lg" fw={700} c="white" mt="md" mb="xs"
                 style={{
                     "borderBottom": "1px solid rgba(255,255,255,0.10)",
                     "paddingBottom": "8px"
                 }}>
-                {props.children}
+                {p.children}
             </Text>;
         },
 
-        "h2": lambda props: any -> any {
+        "h2": lambda p: any -> any {
             return <Text size="md" fw={700} c="white" mt="sm" mb="xs">
-                {props.children}
+                {p.children}
             </Text>;
         },
 
-        "h3": lambda props: any -> any {
+        "h3": lambda p: any -> any {
             return <Text size="sm" fw={700} c="white" mt="sm" mb="xs">
-                {props.children}
+                {p.children}
             </Text>;
         },
 
-        "p": lambda props: any -> any {
+        "p": lambda p: any -> any {
             return <Text size="sm" c="gray.3" my="xs" style={{"lineHeight": "1.7"}}>
-                {props.children}
+                {p.children}
             </Text>;
         },
 
-        "ul": lambda props: any -> any {
+        "ul": lambda p: any -> any {
             return <Box component="ul" my="xs" pl="md" style={{"listStyleType": "disc"}}>
-                {props.children}
+                {p.children}
             </Box>;
         },
 
-        "ol": lambda props: any -> any {
+        "ol": lambda p: any -> any {
             return <Box component="ol" my="xs" pl="md" style={{"listStyleType": "decimal"}}>
-                {props.children}
+                {p.children}
             </Box>;
         },
 
-        "li": lambda props: any -> any {
+        "li": lambda p: any -> any {
             return <Text component="li" size="sm" c="gray.3"
                 style={{"lineHeight": "1.7", "marginBottom": "4px"}}>
-                {props.children}
+                {p.children}
             </Text>;
         },
 
-        "strong": lambda props: any -> any {
+        "strong": lambda p: any -> any {
             return <strong style={{
                 "fontWeight": "700",
                 "color": "#ffffff"
             }}>
-                {props.children}
+                {p.children}
             </strong>;
         },
 
-        "em": lambda props: any -> any {
+        "em": lambda p: any -> any {
             return <em style={{
                 "fontStyle": "italic",
                 "color": "#a1a1aa"
             }}>
-                {props.children}
+                {p.children}
             </em>;
         },
 
-        "a": lambda props: any -> any {
+        "a": lambda p: any -> any {
             return <Text
                 component="a"
-                href={props.href}
+                href={p.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 td="none"
@@ -344,11 +344,11 @@ def:pub ChatMessage(message: str, isUser: bool, timestamp: any = null) -> JsxEle
                     "color": ORANGE
                 }}
             >
-                {props.children}
+                {p.children}
             </Text>;
         },
 
-        "hr": lambda props: any -> any {
+        "hr": lambda p: any -> any {
             return <Box my="md" style={{"borderTop": "1px solid rgba(255,255,255,0.10)"}} />;
         }
     };
