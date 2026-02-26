@@ -258,7 +258,7 @@ async function main() {
   });
 
   await runTest("Admin route redirects to login", async () => {
-    await navigate(`${SERVER_URL}/admin`);
+    await navigate(`${SERVER_URL}/dashboard`);
     await waitFor({ text: "Welcome Back" }, 15000);
     await verifyText("Welcome Back");
   });
