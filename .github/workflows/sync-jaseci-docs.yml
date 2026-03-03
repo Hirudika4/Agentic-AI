@@ -53,9 +53,11 @@ jobs:
       - name: Install dependencies for doc link generation
         run: |
           pip install --upgrade pip
-          pip install jaclang sentence-transformers numpy pyyaml
+          pip install jaclang jac-byllm sentence-transformers numpy pyyaml python-dotenv
 
       - name: Generate documentation links with embeddings
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd jac-gpt-fullstack
           jac run services/generate_doc_links.jac
