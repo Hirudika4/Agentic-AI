@@ -1,9 +1,9 @@
 name: Sync Jaseci Docs
 
 on:
-  # Run every Monday at 00:00 UTC
+  # Run daily at 00:00 UTC
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * *'
 
   # Allow manual triggering
   workflow_dispatch:
@@ -98,7 +98,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_URL=$(gh pr create \
-            --title "🔄 Weekly Docs Sync from jaseci-labs/jaseci" \
+            --title "🔄 Daily Docs Sync from jaseci-labs/jaseci" \
             --body "## Automated Documentation Sync
 
           This PR updates the Jaseci documentation from the [jaseci-labs/jaseci](https://github.com/jaseci-labs/jaseci) repository.
